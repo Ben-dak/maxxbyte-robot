@@ -10,72 +10,78 @@ import org.yearup.models.Product;
 
 import java.util.List;
 
-// add the annotations to make this a REST controller
-// add the annotation to make this controller the endpoint for the following url
-    // http://localhost:8080/categories
-// add annotation to allow cross site origin requests
+
 @RestController
+// Tells Spring this class handles REST requests and returns JSON
 @RequestMapping("/categories")
+// Base URL for all endpoints in this controller
 public class CategoriesController
 {
     private CategoryDao categoryDao;
-    private ProductDao productDao;
+    // Reference to Category data access object
 
-    // create an Autowired controller to inject the categoryDao and ProductDao
-    // add the appropriate annotation for a get action
+    private ProductDao productDao;
+    // Reference to Category data access object
+
     @Autowired
+    // Constructor injection (Spring supplies the DAO implementations)
     public CategoriesController(CategoryDao categoryDao, ProductDao productDao)
     {
         this.categoryDao = categoryDao;
         this.productDao = productDao;
     }
 
-    // add the appropriate annotation for a get action
     @GetMapping("/{id}")
+    // Handles GET requests  in insomnia like: /categories/3
     public Category getById(@PathVariable int id)
+    // @PathVariable pulls the {id} value from the URL above
     {
         return categoryDao.getById(id);
+        // find and return a category by ID
     }
 
-    // the url to return all products in category 1 would look like this
-    // https://localhost:8080/categories/1/products
     @GetMapping("{categoryId}/products")
+    // Handles GET requests  in insomnia like: /categories/3/products
     public List<Product> getProductsById(@PathVariable int categoryId)
     {
         return productDao.listByCategoryId(categoryId);
+        // Returns all products that belong to the given category
     }
 
-    // add annotation to call this method for a POST action
-    // add annotation to ensure that only an ADMIN can call this function
     @PostMapping
+    // Handles POST requests in insomnia like /categories
     @PreAuthorize("hasRole('ADMIN')")
+    // Only users with ADMIN role may call this
     public Category addCategory(@RequestBody Category category)
+    // @RequestBody converts incoming JSON into a Category object
     {
         return categoryDao.create(category);
+        // Save the category and return it
     }
 
-    // add annotation to call this method for a PUT (update) action - the url path must include the categoryId
-    // add annotation to ensure that only an ADMIN can call this function
     @PutMapping("/{id}")
+    // Handles POUT requests in insomnia like /categories/5
     @PreAuthorize("hasRole('ADMIN')")
     public void updateCategory(@PathVariable int id, @RequestBody Category category)
     {
         categoryDao.update(id, category);
+        // Update the existing category in the database
     }
 
-
-    // add annotation to call this method for a DELETE action - the url path must include the categoryId
-    // add annotation to ensure that only an ADMIN can call this function
     @DeleteMapping("/{id}")
+    // Handles DELETE requests in insomnia like /categories/5
     @PreAuthorize("hasRole('ADMIN')")
     public void deleteCategory(@PathVariable int id)
     {
         categoryDao.delete(id);
+        // Removes the category from the database
     }
 
     @GetMapping
+    // Handles GET requests in insomnia like /categories
     public List<Category> getAll()
     {
         return categoryDao.getAllCategories();
+        // Returns all categories
     }
 }

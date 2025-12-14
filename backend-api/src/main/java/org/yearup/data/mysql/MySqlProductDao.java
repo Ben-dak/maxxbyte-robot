@@ -23,7 +23,7 @@ public class MySqlProductDao extends MySqlDaoBase implements ProductDao
     {
         List<Product> products = new ArrayList<>();
 
-        // no sign for maximum was added
+        // bug - no sign for minPrice was added
         String sql = "SELECT * FROM products " +
                 "WHERE (category_id = ? OR ? = -1)" +
                 " AND (price >= ? OR ? = -1) " +

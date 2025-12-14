@@ -10,30 +10,36 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
+// Registers this DAO as a Spring bean for injection
 public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
 {
     public MySqlCategoryDao(DataSource dataSource)
     {
         super(dataSource);
+        // Passes DataSource to the base class
     }
 
     @Override
     public List<Category> getAllCategories()
-    {   // get all categories
+    {
         List<Category> categories = new ArrayList<>();
+        // holds all categories from the database
 
         String sql = """
             SELECT category_id, name, description
             FROM categories
             """;
+        // query to retrieve all categories
 
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql);
              ResultSet resultSet = preparedStatement.executeQuery())
+        // try-with resources (automatically closes database resources)
         {
             while (resultSet.next())
             {
                 categories.add(mapRow(resultSet));
+                // Converts each row into a Category object
             }
         }
         catch (SQLException e)
@@ -55,12 +61,14 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
              PreparedStatement preparedStatement = connection.prepareStatement(sql))
         {
             preparedStatement.setInt(1, categoryId);
+            // Safely inject categoryId into SQL
 
             try (ResultSet resultSet = preparedStatement.executeQuery())
             {
                 if (resultSet.next())
                 {
                     return mapRow(resultSet);
+                    // Return the category
                 }
             }
         }
@@ -86,14 +94,17 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         {
             preparedStatement.setString(1, category.getName());
             preparedStatement.setString(2, category.getDescription());
+            // Fill placeholders
 
             preparedStatement.executeUpdate();
+            // executes INSERT
 
             try (ResultSet keys = preparedStatement.getGeneratedKeys())
             {
                 if (keys.next())
                 {
                     category.setCategoryId(keys.getInt(1));
+                    // Stores generated primary key
                 }
             }
         }
@@ -122,6 +133,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             preparedStatement.setInt(3, categoryId);
 
             preparedStatement.executeUpdate();
+            // Executes UPDATE
         }
         catch (SQLException e)
         {
@@ -142,6 +154,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         {
             preparedStatement.setInt(1, categoryId);
             preparedStatement.executeUpdate();
+            // executes DELETE
         }
         catch (SQLException e)
         {
@@ -156,8 +169,10 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         category.setCategoryId(row.getInt("category_id"));
         category.setName(row.getString("name"));
         category.setDescription(row.getString("description"));
+        // Map database columns to object fields
 
         return category;
     }
 }
+
 
