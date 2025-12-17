@@ -89,7 +89,7 @@ public class ShoppingCartController
     // put method
     @PutMapping("products/{productId}")
     @PreAuthorize("hasAnyRole('ADMIN','USER')")
-    public ShoppingCart updateCart(@PathVariable int productId,@RequestBody ShoppingCartItem shoppingCartItem, Principal principal) {
+    public ShoppingCart updateCart(@PathVariable int productId,@RequestBody ShoppingCartItem cartItem, Principal principal) {
 
         // gets the login username
         String userName = principal.getName();
@@ -103,14 +103,14 @@ public class ShoppingCartController
         // Retrieves cart then ensures the update applies to the correct one
         ShoppingCart shoppingCart = shoppingCartDao.getCartByUserId(user.getId());
 
-        // Creates a new ShoppingCartItem to represent the item being added
-        ShoppingCartItem item = new ShoppingCartItem();
+        // This was causing some issues - it made the new "item" be used below
+        // ShoppingCartItem item = new ShoppingCartItem();
 
         // Associate the selected product with the cart item
-        item.setProduct(product);
+        cartItem.setProduct(product);
 
         // updates/adds item to the users cart in shoppingCartDao
-        shoppingCartDao.addProduct(item, user);
+        shoppingCartDao.addProduct(cartItem, user);
 
         return shoppingCart;
     }
