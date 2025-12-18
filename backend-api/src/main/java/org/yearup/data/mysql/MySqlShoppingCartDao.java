@@ -18,7 +18,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     // Constructor injection of the DataSource
     @Autowired
     public MySqlShoppingCartDao(DataSource dataSource) {
-        // pass the DataSource to the base (DAO) class
+        // passes the DataSource to the base (DAO) class
         super(dataSource);
     }
 
@@ -90,14 +90,14 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         {
             // checks if product exists in cart
             PreparedStatement select = connection.prepareStatement(selectSql);
-            select.setInt(1, user.getId());          // Bind user ID
-            select.setInt(2, item.getProductId());  // Bind product ID
+            select.setInt(1, user.getId());          // Binds user ID
+            select.setInt(2, item.getProductId());  // Binds product ID
 
             ResultSet resultSet = select.executeQuery();
 
             if (resultSet.next())
             {
-                // if product already exists - ass to the quantity
+                // if product already exists - add to the quantity
                 int newQuantity = resultSet.getInt("quantity") + item.getQuantity();
 
                 PreparedStatement update = connection.prepareStatement(updateSql);

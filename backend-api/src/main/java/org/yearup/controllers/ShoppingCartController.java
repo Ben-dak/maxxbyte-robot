@@ -84,7 +84,6 @@ public class ShoppingCartController
         // adds the item to the users cart in shoppingCartDao
         return shoppingCartDao.addProduct(item,user);
     }
-    // my plan for updateCarts method
 
     // put method
     @PutMapping("products/{productId}")
@@ -123,19 +122,11 @@ public class ShoppingCartController
         // gets logged-in username
         String userName = principal.getName();
 
-        // findss user record
+        // finds user record
         User user = userDao.getByUserName(userName);
 
         // clears cart for this user
         shoppingCartDao.clearCart(user);
     }
-
-    // my plan for new clearCart method
-    // Default Note: add a DELETE method to clear all products from the current users cart - https://localhost:8080/cart
-
-    // gets the login username
-    // look for the users record
-    // Retrieve the product that is needed to delete
-    // Clear the cart for the user
 }
 
