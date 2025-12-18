@@ -115,6 +115,21 @@ public class ShoppingCartController
         return shoppingCart;
     }
 
+    @DeleteMapping("")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void clearCart(Principal principal)
+    {
+        // gets logged-in username
+        String userName = principal.getName();
+
+        // findss user record
+        User user = userDao.getByUserName(userName);
+
+        // clears cart for this user
+        shoppingCartDao.clearCart(user);
+    }
+
     // my plan for new clearCart method
     // Default Note: add a DELETE method to clear all products from the current users cart - https://localhost:8080/cart
 
