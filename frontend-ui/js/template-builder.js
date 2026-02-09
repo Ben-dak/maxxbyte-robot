@@ -4,21 +4,29 @@ class TemplateBuilder
 {
     build(templateName, value, target, callback)
     {
+        const targetEl = document.getElementById(target);
+        if (!targetEl) return;
         axios.get(`templates/${templateName}.html`)
             .then(response => {
                 try
                 {
                     const template = response.data;
                     const html = Mustache.render(template, value);
-                    document.getElementById(target).innerHTML = html;
+                    targetEl.innerHTML = html;
 
                     if(callback) callback();
                 }
                 catch(e)
                 {
-                    console.log(e);
+                    console.error('Template render error', e);
                 }
             })
+            .catch(err => {
+                console.error('Failed to load template: ' + templateName, err);
+                if (target === 'main') {
+                    targetEl.innerHTML = '<div class="alert alert-danger">Could not load this screen. If you opened the app as a file, run it from a local server (e.g. Live Server) instead.</div>';
+                }
+            });
     }
 
     clear(target)

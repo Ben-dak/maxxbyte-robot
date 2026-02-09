@@ -1,0 +1,23 @@
+<section class="screen order-status-screen">
+    <h2>Order Status</h2>
+    <div class="status-unified-bar">
+        <div class="status-bar-track"></div>
+        <div class="status-logo-runner">
+            <img src="{{statusLogo}}" alt="" class="status-moving-logo">
+        </div>
+        <div class="status-step status-step-1 {{step1Class}}">
+            <div class="status-icon"><img src="{{statusPlacedImage}}" alt="Order placed"></div>
+            <span>Order Placed</span>
+        </div>
+        <div class="status-step status-step-2 {{step2Class}}">
+            <div class="status-icon"><img src="{{statusEnRouteImage}}" alt="Order en route"></div>
+            <span>Order En Route</span>
+        </div>
+        <div class="status-step status-step-3 {{step3Class}}">
+            <div class="status-icon"><img src="{{statusArrivedImage}}" alt="Order arrived"></div>
+            <span>Order Arrived</span>
+        </div>
+    </div>
+    <p class="status-message">Status updates every 10 minutes.</p>
+    <button type="button" class="btn btn-outline-secondary mt-3" onclick="loadHome()">Back to Home</button>
+</section>

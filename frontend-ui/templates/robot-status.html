@@ -1,0 +1,32 @@
+<section class="container mt-4">
+    <h2>Robot Status</h2>
+    {{#hasRobots}}
+    <table class="table table-striped mt-3">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Status</th>
+            <th>Battery</th>
+            <th>Location</th>
+            <th>Speed (mph)</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#robots}}
+        <tr>
+            <td>{{robotId}}</td>
+            <td>{{name}}</td>
+            <td>{{status}}</td>
+            <td>{{batteryLevel}}%</td>
+            <td>{{currentLocation}}</td>
+            <td>{{currentSpeedMph}}</td>
+        </tr>
+        {{/robots}}
+        </tbody>
+    </table>
+    {{/hasRobots}}
+    {{^hasRobots}}
+    <p class="text-muted mt-3">No robots found.</p>
+    {{/hasRobots}}
+</section>

@@ -2,12 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>BiteBot</title>
 
     <!--  CSS  -->
     <link rel="stylesheet" href="css/lib/bootstrap.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="css/main.css">
+    <link href="https://fonts.cdnfonts.com/css/horizon-2" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
 
     <!--  JS  -->
     <script src="js/lib/axios.min.js"></script>
@@ -22,10 +24,12 @@
     <script src="js/services/user-service.js"></script>
     <script src="js/services/profile-service.js"></script>
     <script src="js/services/shoppingcart-service.js"></script>
+    <script src="js/services/orders-service.js"></script>
+    <script src="js/services/robot-service.js"></script>
 
     <script src="js/filter.js"></script>
 
-
+    <script src="js/bitebot-flow.js"></script>
     <script src="js/application.js"></script>
 </head>
 <body>
@@ -41,21 +45,6 @@
     </main>
 
     <footer></footer>
-
-    <!-- ================= POPUP OVERLAY ================= -->
-    <!-- This is where the popup, the X button, and where the image is specified -->
-    <div id="promo-overlay" class="overlay hidden">
-        <div class="popup image-popup">
-            <button class="close-btn" id="close-popup">&times;</button>
-
-            <img
-                    src="images/promo/promo-ad.png"
-                    alt="Promotional Ad"
-                    class="promo-image"
-            />
-        </div>
-    </div>
-    <!-- ================================================= -->
 
 </body>
 </html>

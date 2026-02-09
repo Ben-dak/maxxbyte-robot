@@ -1,41 +1,19 @@
-<div class="filter-box">
-    <h3>Filter</h3>
-
-    <div class="form-floating mb-3">
-        <select name="" id="category-select" class="form-select"
-            onchange="setCategory(this)"
-        >
-            <option value="0">Show All</option>
-        </select>
-        <label for="category-select">Category</label>
+<section class="bitebot-home-new">
+  <div class="home-header-divider" aria-hidden="true"></div>
+  <div class="hero-section">
+    <div class="hero-bg{{#heroBackgroundImage}} hero-bg-custom{{/heroBackgroundImage}}">
+      {{#heroBackgroundImage}}<img class="hero-bg-img" src="{{heroBackgroundImage}}" alt="" role="presentation">{{/heroBackgroundImage}}
     </div>
-    <div>
-        <label for="min-price" class="form-label">Minimum Price: $ <span id="min-price-display">0</span></label>
-        <input type="range" class="form-range" id="min-price" min="0" max="200" value="0" onchange="setMinPrice(this)">
+    <div class="hero-content">
+      <div class="hero-slogan-wrap">
+        <h2 class="hero-slogan-line">BITES</h2>
+        <h2 class="hero-slogan-line">DELIVERED</h2>
+        <h2 class="hero-slogan-line">BY BOTS</h2>
+      </div>
     </div>
-    <div>
-        <label for="max-price" class="form-label">Maximum Price: $ <span id="max-price-display">200</span></label>
-        <input type="range" class="form-range" id="max-price" min="0" max="200" value="200" onchange="setMaxPrice(this)">
+    <div class="cta-bar">
+      <button type="button" class="cta-start-order" onclick="goToLoginScreen()">START YOUR ORDER</button>
+      <button type="button" class="cta-delivery" onclick="goToLoginScreen()">DELIVERY</button>
     </div>
-
-    <div class="form-floating mb-3">
-        <select name="" id="subcategory-select" class="form-select"
-                onchange="setSubcategory(this)"
-        >
-            <option value="">Show All</option>
-            <option>Action</option>
-            <option>Adventure</option>
-            <option>RPG</option>
-            <option>Sports</option>
-            <option>Racing</option>
-            <option>Shooter</option>
-            <option>Fighting</option>
-            <option>Strategy</option>
-            <option>Simulation</option>
-            <option>Puzzle</option>
-        </select>
-        <label for="subcategory-select">Genre</label>
-    </div>
-
-</div>
-<div id="content" class="content"></div>
+  </div>
+</section>

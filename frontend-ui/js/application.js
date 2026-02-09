@@ -1,7 +1,7 @@
 
 function showLoginForm()
 {
-    templateBuilder.build('login-form', {}, 'login');
+    templateBuilder.build('login-form', { loginImage: config.assets.login }, 'login');
 }
 
 function hideModalForm()
@@ -30,10 +30,24 @@ function showImageDetailForm(product, imageUrl)
 
 function loadHome()
 {
-    templateBuilder.build('home', {}, 'main');
+    document.body.classList.remove('restaurant-view');
+    const data = {
+        image1: config.assets.homeImage1,
+        image2: config.assets.homeImage2,
+        logo: config.assets.logo,
+        heroFoodImage: config.assets.heroFoodImage || config.assets.butterChickenImage,
+        heroBackgroundImage: config.assets.homeHeroBackground || ''
+    };
+    templateBuilder.build('home', data, 'main');
+}
 
-    productService.search();
-    categoryService.getAllCategories(loadCategories);
+function scrollToMenu()
+{
+    const section = document.getElementById("menu-section");
+    if(section)
+    {
+        section.scrollIntoView({ behavior: "smooth" });
+    }
 }
 
 function editProfile()
@@ -43,25 +57,29 @@ function editProfile()
 
 function saveProfile()
 {
-    const firstName = document.getElementById("firstName").value;
-    const lastName = document.getElementById("lastName").value;
-    const phone = document.getElementById("phone").value;
-    const email = document.getElementById("email").value;
-    const address = document.getElementById("address").value;
-    const city = document.getElementById("city").value;
-    const state = document.getElementById("state").value;
-    const zip = document.getElementById("zip").value;
+    const cardNumberRaw = document.getElementById("cardNumber")?.value?.trim() || '';
+    const cardNumberLast4 = cardNumberRaw.length >= 4 ? cardNumberRaw.slice(-4) : (cardNumberRaw.replace(/\D/g, '').slice(-4) || null);
 
     const profile = {
-        firstName,
-        lastName,
-        phone,
-        email,
-        address,
-        city,
-        state,
-        zip
+        firstName: document.getElementById("firstName").value,
+        lastName: document.getElementById("lastName").value,
+        phone: document.getElementById("phone").value,
+        email: document.getElementById("email").value,
+        nameOnCard: document.getElementById("nameOnCard").value,
+        expMonth: document.getElementById("expMonth").value,
+        expYear: document.getElementById("expYear").value,
+        billingAddress: document.getElementById("billingAddress").value,
+        billingCity: document.getElementById("billingCity").value,
+        billingState: document.getElementById("billingState").value,
+        billingZip: document.getElementById("billingZip").value,
+        billingCountry: document.getElementById("billingCountry").value,
+        address: document.getElementById("address").value,
+        city: document.getElementById("city").value,
+        state: document.getElementById("state").value,
+        zip: document.getElementById("zip").value,
+        deliveryCountry: document.getElementById("deliveryCountry").value
     };
+    if (cardNumberLast4) profile.cardNumberLast4 = cardNumberLast4;
 
     profileService.updateProfile(profile);
 }
@@ -69,6 +87,88 @@ function saveProfile()
 function showCart()
 {
     cartService.loadCartPage();
+}
+
+function showOrderForm()
+{
+    const totalAmount = cartService.cart.total || 0;
+    templateBuilder.build('order-create', { totalAmount, paymentImage: config.assets.payment }, 'main');
+}
+
+function submitOrder()
+{
+    const deliveryAddress = document.getElementById("deliveryAddress").value;
+    const deliveryCity = document.getElementById("deliveryCity").value;
+    const deliveryState = document.getElementById("deliveryState").value;
+    const deliveryZip = document.getElementById("deliveryZip").value;
+    const totalAmount = document.getElementById("orderTotal").value;
+
+    const order = {
+        deliveryAddress,
+        deliveryCity,
+        deliveryState,
+        deliveryZip,
+        totalAmount
+    };
+
+    ordersService.createOrder(order)
+        .then(() => {
+            cartService.clearCart();
+            loadOrders();
+        })
+        .catch(() => {
+            const data = { error: "Order submission failed." };
+            templateBuilder.append("error", data, "errors");
+        });
+}
+
+function loadOrders()
+{
+    ordersService.getOrders()
+        .then(response => {
+            const orders = response.data || [];
+            const data = {
+                orders,
+                hasOrders: orders.length > 0,
+                orderCardImage: config.assets.orderCard
+            };
+            templateBuilder.build('orders', data, 'main');
+        })
+        .catch(() => {
+            const data = { error: "Unable to load orders." };
+            templateBuilder.append("error", data, "errors");
+        });
+}
+
+function loadOrderDetail(orderId)
+{
+    ordersService.getOrderById(orderId)
+        .then(response => {
+            const data = {
+                order: response.data,
+                statusImage: config.assets.status,
+                confirmationImage: config.assets.confirmation
+            };
+            templateBuilder.build('order-detail', data, 'main');
+        })
+        .catch(() => {
+            const data = { error: "Unable to load order details." };
+            templateBuilder.append("error", data, "errors");
+        });
+}
+
+function loadRobotStatus()
+{
+    robotService.getRobotStatuses()
+        .then(response => {
+            const robots = response.data || [];
+            const data = { robots, hasRobots: robots.length > 0 };
+            templateBuilder.build('robot-status', data, 'main');
+        })
+        .catch(() => {
+            const data = { error: "Unable to load robot status." };
+            templateBuilder.append("error", data, "errors");
+        });
 }
 
 function clearCart()
@@ -89,26 +189,6 @@ function setSubcategory(control)
     productService.search();
 }
 
-function setMinPrice(control)
-{
-    const label = document.getElementById("min-price-display");
-    label.innerText = control.value;
-
-    const value = control.value != 0 ? control.value : "";
-    productService.addMinPriceFilter(value);
-    productService.search();
-}
-
-function setMaxPrice(control)
-{
-    const label = document.getElementById("max-price-display");
-    label.innerText = control.value;
-
-    const value = control.value != 200 ? control.value : "";
-    productService.addMaxPriceFilter(value);
-    productService.search();
-}
-
 function closeError(control)
 {
     setTimeout(() => {
@@ -119,26 +199,6 @@ function closeError(control)
 /* ===========================
    PAGE LOAD INITIALIZATION
    =========================== */
-// This is where the behavior for the ad lies
 document.addEventListener('DOMContentLoaded', () => {
-
-    // Load home page
     loadHome();
-
-    // ---- PROMO IMAGE POPUP  ----
-    const overlay = document.getElementById("promo-overlay");
-    const closeBtn = document.getElementById("close-popup");
-
-    if (overlay && closeBtn)
-    {
-        // Always shows popup (no localStorage while developing - can look this up more later)
-        setTimeout(() => {
-            overlay.classList.remove("hidden");
-        }, 800);
-
-        // Closes popup when "X" is clicked
-        closeBtn.addEventListener("click", () => {
-            overlay.classList.add("hidden");
-        });
-    }
 });

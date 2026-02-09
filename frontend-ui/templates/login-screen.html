@@ -1,0 +1,16 @@
+<section class="screen login-screen">
+    <h2>Login</h2>
+    <p class="login-subtitle">Enter your username and password. Your information is already saved in our system.</p>
+    <div class="login-form-box">
+        <div class="mb-3">
+            <label class="form-label" for="login-username">Username</label>
+            <input type="text" class="form-control" id="login-username" placeholder="Username">
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" class="form-control" id="login-password" placeholder="Password">
+        </div>
+        <button type="button" class="btn btn-primary btn-login-submit" onclick="loginAndGoToRestaurant()">Login</button>
+    </div>
+    <div id="login-error" class="text-danger mt-2 small"></div>
+</section>

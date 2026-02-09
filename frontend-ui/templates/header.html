@@ -1,27 +1,38 @@
 
 {{#loggedin}}
 <div id="links">
-    <img src="/images/logo.svg" alt="videogamestore logo">
-    <a href="#" onclick="loadHome()">Home</a>
-    <a href="#" onclick="editProfile()">Profile</a>
-    <a href="#" onclick="showCart()">View Cart</a>
+    <a href="#" class="header-nav-link header-nav-order" onclick="loadHome(); return false;">ORDER NOW</a>
+    <a href="#" class="header-nav-link" onclick="goToRestaurantScreen(); return false;">RESTAURANTS</a>
 </div>
-
-<div>
-    Welcome&nbsp;<span style="font-weight: bold">{{username}}</span>&nbsp;|&nbsp;<a href="#" onclick="userService.logout();return false;">logout</a>
+<div class="header-center">
+    <div class="header-brand">
+        <img class="brand-logo" src="{{logoUrl}}" alt="BiteBot logo">
+    </div>
+</div>
+<div class="header-right">
+    <span class="header-welcome">Welcome&nbsp;<strong>{{username}}</strong></span>
+    <a href="#" class="header-signin-btn" onclick="userService.logout(); return false;">SIGN OUT</a>
+    {{#showCart}}
     <div class="cart" onclick="showCart()">
         <i class="fa-solid fa-cart-shopping"></i>
         <div id="cart-items">0</div>
     </div>
+    {{/showCart}}
+    <i class="fa-solid fa-user header-user-icon"></i>
 </div>
 {{/loggedin}}
 {{#loggedout}}
 <div id="links">
-    <img src="/images/logo.svg" alt="videogamestore logo">
-    <a href="#" onclick="loadHome()">Home</a>
+    <a href="#" class="header-nav-link header-nav-order" onclick="loadHome(); return false;">ORDER NOW</a>
+    <a href="#" class="header-nav-link" onclick="loadHome(); return false;">RESTAURANTS</a>
 </div>
-
-<div>
-    <a href="#"  onclick="showLoginForm();return false;">login</a>
+<div class="header-center">
+    <div class="header-brand">
+        <img class="brand-logo" src="{{logoUrl}}" alt="BiteBot logo">
+    </div>
+</div>
+<div class="header-right">
+    <a href="#" class="header-signin-btn" onclick="showLoginForm(); return false;">SIGN IN</a>
+    <i class="fa-solid fa-user header-user-icon"></i>
 </div>
 {{/loggedout}}

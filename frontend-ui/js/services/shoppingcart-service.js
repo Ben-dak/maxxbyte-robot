@@ -102,6 +102,22 @@ class ShoppingCartService {
         this.cart.items.forEach(item => {
             this.buildItem(item, contentDiv)
         });
+
+        const checkoutDiv = document.createElement("div");
+        checkoutDiv.classList.add("mt-3");
+
+        const checkoutButton = document.createElement("button");
+        checkoutButton.classList.add("btn", "btn-primary");
+        checkoutButton.innerText = "Checkout";
+        checkoutButton.addEventListener("click", () => showOrderForm());
+
+        const totalLabel = document.createElement("div");
+        totalLabel.classList.add("mt-2");
+        totalLabel.innerText = `Total: $${this.cart.total}`;
+
+        checkoutDiv.appendChild(checkoutButton);
+        checkoutDiv.appendChild(totalLabel);
+        contentDiv.appendChild(checkoutDiv);
     }
 
     buildItem(item, parent)
