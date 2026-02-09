@@ -4,10 +4,10 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class VideogamestoreApplication
+public class RobotApplication
 {
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(VideogamestoreApplication.class);
+        SpringApplication app = new SpringApplication(RobotApplication.class);
         app.run(args);
     }
 }
