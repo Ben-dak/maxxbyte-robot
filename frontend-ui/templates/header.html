@@ -1,23 +1,27 @@
 
 {{#loggedin}}
 <div id="links">
-    <img src="/images/logo.svg" alt="videogamestore logo">
+    <img class="brand-logo" src="{{logoUrl}}" alt="BiteBot logo">
     <a href="#" onclick="loadHome()">Home</a>
     <a href="#" onclick="editProfile()">Profile</a>
-    <a href="#" onclick="showCart()">View Cart</a>
+    {{#showOrders}}<a href="#" onclick="loadOrders()">Orders</a>{{/showOrders}}
+    {{#showRobotStatus}}<a href="#" onclick="loadRobotStatus()">Robot Status</a>{{/showRobotStatus}}
+    {{#showCart}}<a href="#" onclick="showCart()">View Cart</a>{{/showCart}}
 </div>
 
 <div>
     Welcome&nbsp;<span style="font-weight: bold">{{username}}</span>&nbsp;|&nbsp;<a href="#" onclick="userService.logout();return false;">logout</a>
+    {{#showCart}}
     <div class="cart" onclick="showCart()">
         <i class="fa-solid fa-cart-shopping"></i>
         <div id="cart-items">0</div>
     </div>
+    {{/showCart}}
 </div>
 {{/loggedin}}
 {{#loggedout}}
 <div id="links">
-    <img src="/images/logo.svg" alt="videogamestore logo">
+    <img class="brand-logo" src="{{logoUrl}}" alt="BiteBot logo">
     <a href="#" onclick="loadHome()">Home</a>
 </div>
 

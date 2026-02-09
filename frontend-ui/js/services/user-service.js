@@ -72,10 +72,18 @@ class UserService {
 
     setHeaderLogin()
     {
+        const role = this.currentUser.role || '';
+        const isStaffAdmin = role === 'ROLE_ADMIN' || role === 'ROLE_STAFF';
+        const isCustomer = role === 'ROLE_CUSTOMER' || role === 'ROLE_USER';
+
         const user = {
                 username: this.getUserName(),
                 loggedin: this.isLoggedIn(),
-                loggedout: !this.isLoggedIn()
+                loggedout: !this.isLoggedIn(),
+                showOrders: this.isLoggedIn(),
+                showRobotStatus: isStaffAdmin,
+                showCart: isCustomer,
+                logoUrl: config.assets.hero
             };
 
         templateBuilder.build('header', user, 'header-user');
@@ -83,12 +91,12 @@ class UserService {
 
     register (username, password, confirm)
     {
-        const url = `${config.baseUrl}/register`;
+        const url = `${config.baseUrl}/auth/register`;
         const register = {
             username: username,
             password: password,
             confirmPassword: confirm,
-            role: 'USER'
+            role: 'CUSTOMER'
         };
 
         axios.post(url, register)
@@ -107,7 +115,7 @@ class UserService {
 
     login (username, password)
     {
-        const url = `${config.baseUrl}/login`;
+        const url = `${config.baseUrl}/auth/login`;
         const login = {
             username: username,
             password: password

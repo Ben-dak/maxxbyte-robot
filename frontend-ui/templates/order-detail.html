@@ -1,0 +1,18 @@
+<section class="order-detail">
+    <div class="order-detail-main">
+        <h2>Order #{{order.orderId}}</h2>
+        <div class="order-detail-info">
+            <p><strong>Status:</strong> {{order.status}}</p>
+            <p><strong>Created:</strong> {{order.createdAt}}</p>
+            <p><strong>Delivery Address:</strong> {{order.deliveryAddress}}, {{order.deliveryCity}}, {{order.deliveryState}} {{order.deliveryZip}}</p>
+            <p><strong>Total:</strong> ${{order.totalAmount}}</p>
+        </div>
+        <div class="order-detail-actions">
+            <a href="#" onclick="loadOrders();return false;">Back to Orders</a>
+        </div>
+    </div>
+    <div class="order-detail-visuals">
+        <img src="{{statusImage}}" alt="Order status">
+        <img src="{{confirmationImage}}" alt="Order confirmation">
+    </div>
+</section>

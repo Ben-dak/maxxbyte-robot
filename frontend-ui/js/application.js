@@ -1,7 +1,7 @@
 
 function showLoginForm()
 {
-    templateBuilder.build('login-form', {}, 'login');
+    templateBuilder.build('login-form', { loginImage: config.assets.login }, 'login');
 }
 
 function hideModalForm()
@@ -30,10 +30,23 @@ function showImageDetailForm(product, imageUrl)
 
 function loadHome()
 {
-    templateBuilder.build('home', {}, 'main');
+    const data = {
+        heroImage: config.assets.hero,
+        menuImage: config.assets.menu,
+        statusImage: config.assets.status
+    };
 
+    templateBuilder.build('home', data, 'main');
     productService.search();
-    categoryService.getAllCategories(loadCategories);
+}
+
+function scrollToMenu()
+{
+    const section = document.getElementById("menu-section");
+    if(section)
+    {
+        section.scrollIntoView({ behavior: "smooth" });
+    }
 }
 
 function editProfile()
@@ -69,6 +82,88 @@ function saveProfile()
 function showCart()
 {
     cartService.loadCartPage();
+}
+
+function showOrderForm()
+{
+    const totalAmount = cartService.cart.total || 0;
+    templateBuilder.build('order-create', { totalAmount, paymentImage: config.assets.payment }, 'main');
+}
+
+function submitOrder()
+{
+    const deliveryAddress = document.getElementById("deliveryAddress").value;
+    const deliveryCity = document.getElementById("deliveryCity").value;
+    const deliveryState = document.getElementById("deliveryState").value;
+    const deliveryZip = document.getElementById("deliveryZip").value;
+    const totalAmount = document.getElementById("orderTotal").value;
+
+    const order = {
+        deliveryAddress,
+        deliveryCity,
+        deliveryState,
+        deliveryZip,
+        totalAmount
+    };
+
+    ordersService.createOrder(order)
+        .then(() => {
+            cartService.clearCart();
+            loadOrders();
+        })
+        .catch(() => {
+            const data = { error: "Order submission failed." };
+            templateBuilder.append("error", data, "errors");
+        });
+}
+
+function loadOrders()
+{
+    ordersService.getOrders()
+        .then(response => {
+            const orders = response.data || [];
+            const data = {
+                orders,
+                hasOrders: orders.length > 0,
+                orderCardImage: config.assets.orderCard
+            };
+            templateBuilder.build('orders', data, 'main');
+        })
+        .catch(() => {
+            const data = { error: "Unable to load orders." };
+            templateBuilder.append("error", data, "errors");
+        });
+}
+
+function loadOrderDetail(orderId)
+{
+    ordersService.getOrderById(orderId)
+        .then(response => {
+            const data = {
+                order: response.data,
+                statusImage: config.assets.status,
+                confirmationImage: config.assets.confirmation
+            };
+            templateBuilder.build('order-detail', data, 'main');
+        })
+        .catch(() => {
+            const data = { error: "Unable to load order details." };
+            templateBuilder.append("error", data, "errors");
+        });
+}
+
+function loadRobotStatus()
+{
+    robotService.getRobotStatuses()
+        .then(response => {
+            const robots = response.data || [];
+            const data = { robots, hasRobots: robots.length > 0 };
+            templateBuilder.build('robot-status', data, 'main');
+        })
+        .catch(() => {
+            const data = { error: "Unable to load robot status." };
+            templateBuilder.append("error", data, "errors");
+        });
 }
 
 function clearCart()
@@ -119,26 +214,6 @@ function closeError(control)
 /* ===========================
    PAGE LOAD INITIALIZATION
    =========================== */
-// This is where the behavior for the ad lies
 document.addEventListener('DOMContentLoaded', () => {
-
-    // Load home page
     loadHome();
-
-    // ---- PROMO IMAGE POPUP  ----
-    const overlay = document.getElementById("promo-overlay");
-    const closeBtn = document.getElementById("close-popup");
-
-    if (overlay && closeBtn)
-    {
-        // Always shows popup (no localStorage while developing - can look this up more later)
-        setTimeout(() => {
-            overlay.classList.remove("hidden");
-        }, 800);
-
-        // Closes popup when "X" is clicked
-        closeBtn.addEventListener("click", () => {
-            overlay.classList.add("hidden");
-        });
-    }
 });

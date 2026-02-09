@@ -38,7 +38,7 @@ public class ShoppingCartController
 
     // each method in this controller requires a Principal object as a parameter (line 42)
     @GetMapping("")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')") //added ADMIN bc that role will need access to everything
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER','CUSTOMER')") //added ADMIN bc that role will need access to everything
     public ShoppingCart getCart(Principal principal) {
         try {
 
@@ -63,7 +63,7 @@ public class ShoppingCartController
     // POST method
     @PostMapping("/products/{productId}")
     @ResponseStatus(value=HttpStatus.CREATED)
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER','CUSTOMER')")
     public ShoppingCart addItem(@PathVariable int productId, Principal principal) {
 
         // gets the login username
@@ -87,7 +87,7 @@ public class ShoppingCartController
 
     // if there is more than 1 of the same item in the cart - add another
     @PutMapping("products/{productId}")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER','CUSTOMER')")
     public ShoppingCart addQuantity(@PathVariable int productId, @RequestBody ShoppingCartItem cartItem, Principal principal) {
 
         // gets the login username
@@ -115,7 +115,7 @@ public class ShoppingCartController
     }
 
     @DeleteMapping("")
-    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER','CUSTOMER')")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public ShoppingCart clearCart(Principal principal)
     {
