@@ -20,9 +20,9 @@ const config = {
         restaurantLogo: 'images/logo/transparant-logo.png',
         tacoImage: 'images/logo/Tacos Photo.jpg',
         butterChickenImage: 'images/logo/Butter Chicken.jpg',
-        statusPlacedImage: 'images/icons/checkmark-icon.png',
-        statusEnRouteImage: 'images/icons/checkmark-icon.png',
-        statusArrivedImage: 'images/icons/checkmark-icon.png',
+        statusPlacedImage: 'images/logo/checkmark-icon.png',
+        statusEnRouteImage: 'images/logo/checkmark-icon.png',
+        statusArrivedImage: 'images/logo/checkmark-icon.png',
         statusLogo: 'images/logo/status-bar-logo.png'
     }
 }
