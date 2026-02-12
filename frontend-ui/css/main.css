@@ -77,7 +77,10 @@ header .header-user-icon {
     font-size: 1.25rem;
     color: #fff;
 }
-header .header-welcome {
+header .header-welcome,
+header .header-welcome strong {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
     font-size: 0.9rem;
 }
 header div:not(#links):not(.header-center):not(.header-right) {
@@ -413,11 +416,13 @@ main > .content-form .cart-item
 .login-screen-split {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    min-height: 100vh;
+    min-height: calc(100vh - 70px);
+    height: calc(100vh - 70px);
     width: 100%;
     max-width: none;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 /* Red divider bar between Sign In and BiteBot */
@@ -435,7 +440,7 @@ main > .content-form .cart-item
     background-repeat: no-repeat;
     position: relative;
     overflow: hidden;
-    min-height: 100vh;
+    min-height: 0;
 }
 
 .login-screen-visual-img {
@@ -453,23 +458,27 @@ main > .content-form .cart-item
     display: flex;
     flex-direction: column;
     background: #fff;
+    min-height: 0;
+    overflow-y: auto;
 }
 
 .login-screen-header {
-    background: var(--bitebot-red);
+    background: #8b1119;
     color: #fff;
     text-align: center;
     padding: 14px 20px;
-    font-weight: 700;
-    font-size: 2.5rem;
-    letter-spacing: 0.15em;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+    text-transform: none;
 }
 
 .login-screen-brand {
     background: var(--bitebot-red);
     color: #fff;
     text-align: center;
-    padding: 28px 20px;
+    padding: 14px 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -532,18 +541,21 @@ main > .content-form .cart-item
 }
 
 .login-screen-form-box {
-    padding: 32px 40px 24px;
+    padding: 24px 32px 18px;
     flex: 1;
 }
 
 .login-screen-prompt {
     color: #444;
-    font-size: 1.25rem;
-    margin-bottom: 20px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 1.05rem;
+    margin-bottom: 14px;
 }
 
 .login-screen-prompt a {
-    font-weight: 600;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
     color: var(--bitebot-red);
     text-decoration: none;
 }
@@ -551,16 +563,16 @@ main > .content-form .cart-item
 .login-screen-fields {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    margin-bottom: 20px;
+    gap: 10px;
+    margin-bottom: 14px;
 }
 
 .login-screen-input {
     width: 100%;
-    padding: 14px 18px;
-    font-size: 1.25rem;
+    padding: 11px 14px;
+    font-size: 1.05rem;
     border: none;
-    border-radius: 12px;
+    border-radius: 10px;
     background: #E6E6E6;
     box-sizing: border-box;
 }
@@ -571,12 +583,12 @@ main > .content-form .cart-item
 
 .login-screen-btn {
     width: 100%;
-    padding: 14px 20px;
-    font-size: 1.65rem;
+    padding: 11px 16px;
+    font-size: 1.4rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.2em;
-    border-radius: 12px;
+    border-radius: 10px;
     cursor: pointer;
     border: none;
     box-sizing: border-box;
@@ -585,7 +597,7 @@ main > .content-form .cart-item
 .login-screen-btn-primary {
     background: var(--bitebot-red);
     color: #fff;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
 }
 
 .login-screen-btn-primary:hover {
@@ -605,9 +617,11 @@ main > .content-form .cart-item
 .login-screen-divider {
     display: flex;
     align-items: center;
-    margin: 20px 0;
+    margin: 6px 0 14px 0;
     color: #555;
-    font-size: 0.9rem;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
+    font-size: 0.85rem;
 }
 
 .login-screen-divider::before,
@@ -620,6 +634,8 @@ main > .content-form .cart-item
 
 .login-screen-divider span {
     padding: 0 14px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-weight: 400;
 }
 
 .login-screen-error {
