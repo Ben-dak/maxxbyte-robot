@@ -1,22 +1,33 @@
-<section class="screen restaurant-screen">
-    <h2 class="restaurant-name">Saffron and Serrano</h2>
-    <div class="menu-items">
-        <div class="menu-item-card">
-            <img class="menu-item-img" src="{{tacoImage}}" alt="Taco Combo">
-            <div class="menu-item-body">
-                <h3>Taco Combo</h3>
-                <p class="menu-item-desc">Three street tacos with your choice of protein, rice, beans, and a side of chips and salsa.</p>
-                <p class="menu-item-price">$15.00</p>
-                <button type="button" class="btn btn-primary" onclick="addToOrder('taco')">Add to Order</button>
+<section class="screen restaurant-screen restaurant-screen-saffron">
+    <div class="restaurant-intro">
+        <h1 class="restaurant-title">Saffron & Serrano</h1>
+        <p class="restaurant-description">Saffron & Serrano is a vibrant Indian-Mexican fusion restaurant blending bold spices, rich traditions, and fiery flavors into one unforgettable culinary experience.</p>
+    </div>
+    <div class="menu-items menu-items-saffron">
+        <div class="menu-item-card menu-item-card-saffron">
+            <h3 class="menu-item-title">Taco Combo</h3>
+            <div class="menu-item-row">
+                <div class="menu-item-img-wrap">
+                    <img class="menu-item-img" src="{{tacoImage}}" alt="Taco Combo">
+                    <button type="button" class="btn btn-add-cart" onclick="addToOrder('taco')">ADD TO CART</button>
+                </div>
+                <div class="menu-item-desc-wrap">
+                    <p class="menu-item-desc">Three ribeye steak tacos wrapped in handmade corn tortillas. Served with a side of basmati rice and refried beans.</p>
+                    <p class="menu-item-price">$15.00</p>
+                </div>
             </div>
         </div>
-        <div class="menu-item-card">
-            <img class="menu-item-img" src="{{butterChickenImage}}" alt="Butter Chicken">
-            <div class="menu-item-body">
-                <h3>Butter Chicken</h3>
-                <p class="menu-item-desc">Tender chicken in a rich tomato-butter sauce with cream, served with basmati rice and naan.</p>
-                <p class="menu-item-price">$15.00</p>
-                <button type="button" class="btn btn-primary" onclick="addToOrder('butterChicken')">Add to Order</button>
+        <div class="menu-item-card menu-item-card-saffron">
+            <h3 class="menu-item-title">Butter Chicken</h3>
+            <div class="menu-item-row">
+                <div class="menu-item-img-wrap">
+                    <img class="menu-item-img" src="{{butterChickenImage}}" alt="Butter Chicken">
+                    <button type="button" class="btn btn-add-cart" onclick="addToOrder('butterChicken')">ADD TO CART</button>
+                </div>
+                <div class="menu-item-desc-wrap">
+                    <p class="menu-item-desc">Tender chicken pieces cooked in a creamy tomato-based sauce with aromatic spices.</p>
+                    <p class="menu-item-price">$15.00</p>
+                </div>
             </div>
         </div>
     </div>

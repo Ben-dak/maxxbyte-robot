@@ -1,8 +1,15 @@
 
 {{#loggedin}}
 <div id="links">
-    <a href="#" class="header-nav-link header-nav-order" onclick="loadHome(); return false;">ORDER NOW</a>
-    <a href="#" class="header-nav-link" onclick="goToRestaurantScreen(); return false;">RESTAURANTS</a>
+    <span class="header-links-default">
+        <a href="#" class="header-nav-link header-nav-order" onclick="loadHome(); return false;">ORDER NOW</a>
+        <a href="#" class="header-nav-link" onclick="goToRestaurantScreen(); return false;">RESTAURANTS</a>
+    </span>
+    <span class="header-links-restaurant">
+        <a href="#" class="header-nav-link" onclick="loadHome(); return false;">HOME</a>
+        <a href="#" class="header-nav-link" onclick="goToRestaurantScreen(); return false;">MENU</a>
+        <a href="#" class="header-nav-link" onclick="goToOrderScreen(); return false;">TRACKER</a>
+    </span>
 </div>
 <div class="header-center">
     <div class="header-brand">
@@ -23,8 +30,15 @@
 {{/loggedin}}
 {{#loggedout}}
 <div id="links">
-    <a href="#" class="header-nav-link header-nav-order" onclick="loadHome(); return false;">ORDER NOW</a>
-    <a href="#" class="header-nav-link" onclick="loadHome(); return false;">RESTAURANTS</a>
+    <span class="header-links-default">
+        <a href="#" class="header-nav-link header-nav-order" onclick="loadHome(); return false;">ORDER NOW</a>
+        <a href="#" class="header-nav-link" onclick="loadHome(); return false;">RESTAURANTS</a>
+    </span>
+    <span class="header-links-restaurant">
+        <a href="#" class="header-nav-link" onclick="loadHome(); return false;">HOME</a>
+        <a href="#" class="header-nav-link" onclick="goToRestaurantScreen(); return false;">MENU</a>
+        <a href="#" class="header-nav-link" onclick="goToOrderScreen(); return false;">TRACKER</a>
+    </span>
 </div>
 <div class="header-center">
     <div class="header-brand">
