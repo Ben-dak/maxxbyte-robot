@@ -94,7 +94,16 @@ function renderOrderScreen() {
 }
 
 function goToLoginScreen() {
-    templateBuilder.build('login-screen', {}, 'main');
+    const loginImg = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
+    const loginImgPng = config.assets.loginFoodPng || loginImg.replace(/\.jpg$/i, '.png');
+    const fallbackImg = config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
+    const cacheBust = '?v=' + (Date.now ? Date.now() : 1);
+    templateBuilder.build('login-screen', {
+        loginLeftImage: loginImg + cacheBust,
+        loginLeftImagePng: loginImgPng,
+        loginFallbackImage: fallbackImg,
+        logoUrl: config.assets.logo
+    }, 'main');
 }
 
 function loginAndGoToRestaurant() {

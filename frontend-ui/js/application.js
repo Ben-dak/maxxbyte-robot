@@ -1,7 +1,7 @@
 
 function showLoginForm()
 {
-    templateBuilder.build('login-form', { loginImage: config.assets.login }, 'login');
+    templateBuilder.build('login-form', { loginImage: config.assets.login, logoUrl: config.assets.logo }, 'login');
 }
 
 function hideModalForm()

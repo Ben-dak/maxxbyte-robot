@@ -1,21 +1,24 @@
 <div id="login-form" class="modal">
-  <div class="login-card">
+  <div class="login-card login-card-bitebot">
     <button class="login-close" type="button" onclick="hideModalForm()" aria-label="Close">&times;</button>
     <div class="login-visual">
       <img src="{{loginImage}}" alt="Login">
     </div>
-    <div class="login-fields">
-      <h2>Login</h2>
-      <p>Please enter your details</p>
-      <div class="form-group">
-        <label for="username">Email</label>
-        <input type="text" class="form-control" id="username" placeholder="Email">
+    <div class="login-fields login-fields-bitebot">
+      <div class="login-screen-header">Sign In</div>
+      <div class="login-screen-brand">
+        <img src="{{logoUrl}}" alt="BiteBot" class="login-screen-brand-logo">
       </div>
-      <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" class="form-control" id="password" placeholder="Password">
+      <div class="login-screen-form-box">
+        <p class="login-screen-prompt">Already have an account? Sign In!</p>
+        <div class="login-screen-fields">
+          <input type="text" class="login-screen-input" id="username" placeholder="Email" autocomplete="username">
+          <input type="password" class="login-screen-input" id="password" placeholder="Password" autocomplete="current-password">
+        </div>
+        <button type="button" class="login-screen-btn login-screen-btn-primary" onclick="login()">CONTINUE</button>
+        <div class="login-screen-divider"><span>or</span></div>
+        <button type="button" class="login-screen-btn login-screen-btn-outline" onclick="hideModalForm()">JOIN NOW</button>
       </div>
-      <button type="button" class="btn btn-primary login-btn" onclick="login()">Log In</button>
     </div>
   </div>
 </div>

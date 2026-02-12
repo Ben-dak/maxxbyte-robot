@@ -15,6 +15,8 @@ const config = {
         homeImage2: 'images/screenshots/homepage.png',
         heroFoodImage: 'images/food/Butter Chicken.jpg',
         homeHeroBackground: 'images/logo/homescreen-background.jpg',
+        loginFood: 'images/logo/login-food.jpg',
+        loginFoodPng: 'images/logo/login-food.png',
         restaurantLogo: 'images/logo/transparant-logo.png',
         tacoImage: 'images/logo/Tacos Photo.jpg',
         butterChickenImage: 'images/logo/Butter Chicken.jpg',

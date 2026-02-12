@@ -1,16 +1,23 @@
-<section class="screen login-screen">
-    <h2>Login</h2>
-    <p class="login-subtitle">Enter your username and password. Your information is already saved in our system.</p>
-    <div class="login-form-box">
-        <div class="mb-3">
-            <label class="form-label" for="login-username">Username</label>
-            <input type="text" class="form-control" id="login-username" placeholder="Username">
-        </div>
-        <div class="mb-3">
-            <label class="form-label" for="login-password">Password</label>
-            <input type="password" class="form-control" id="login-password" placeholder="Password">
-        </div>
-        <button type="button" class="btn btn-primary btn-login-submit" onclick="loginAndGoToRestaurant()">Login</button>
+<section class="screen login-screen-split">
+    <div class="login-screen-visual" style="background-image: url('{{loginLeftImage}}');">
+        <img src="{{loginLeftImage}}" alt="" class="login-screen-visual-img" data-alt="{{loginLeftImagePng}}" data-fallback="{{loginFallbackImage}}" onerror="var next=(this.src.indexOf('.png')!==-1)?this.dataset.fallback:(this.dataset.alt||this.dataset.fallback); this.src=next; if(next===this.dataset.fallback) this.onerror=null;">
     </div>
-    <div id="login-error" class="text-danger mt-2 small"></div>
+    <div class="login-screen-form-panel">
+        <div class="login-screen-header">Sign In</div>
+        <div class="home-header-divider" aria-hidden="true"></div>
+        <div class="login-screen-brand">
+            <img src="{{logoUrl}}" alt="BiteBot" class="login-screen-brand-logo">
+        </div>
+        <div class="login-screen-form-box">
+            <p class="login-screen-prompt">Already have an account? Sign In!</p>
+            <div class="login-screen-fields">
+                <input type="text" class="login-screen-input" id="login-username" placeholder="Email" autocomplete="username">
+                <input type="password" class="login-screen-input" id="login-password" placeholder="Password" autocomplete="current-password">
+            </div>
+            <button type="button" class="login-screen-btn login-screen-btn-primary" onclick="loginAndGoToRestaurant()">CONTINUE</button>
+            <div class="login-screen-divider"><span>or</span></div>
+            <button type="button" class="login-screen-btn login-screen-btn-outline" onclick="goToLoginScreen()">JOIN NOW</button>
+        </div>
+        <div id="login-error" class="login-screen-error"></div>
+    </div>
 </section>
