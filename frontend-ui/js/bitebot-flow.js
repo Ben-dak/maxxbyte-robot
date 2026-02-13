@@ -106,6 +106,76 @@ function goToLoginScreen() {
     }, 'main');
 }
 
+function goToRegisterScreen() {
+    const loginImg = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
+    const loginImgPng = config.assets.loginFoodPng || loginImg.replace(/\.jpg$/i, '.png');
+    const fallbackImg = config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
+    const cacheBust = '?v=' + (Date.now ? Date.now() : 1);
+    templateBuilder.build('register-screen', {
+        loginLeftImage: loginImg + cacheBust,
+        loginLeftImagePng: loginImgPng,
+        loginFallbackImage: fallbackImg,
+        logoUrl: config.assets.logo
+    }, 'main');
+}
+
+/** If already logged in, go to restaurant; otherwise show login. Use for START YOUR ORDER and DELIVERY. */
+function startOrderOrLogin() {
+    if (typeof userService !== 'undefined' && userService.isLoggedIn()) {
+        goToRestaurantScreen();
+    } else {
+        goToLoginScreen();
+    }
+}
+
+/** Same as startOrderOrLogin: logged-in users go to restaurant; others see login. */
+function deliveryOrLogin() {
+    startOrderOrLogin();
+}
+
+function registerAndGoToRestaurant() {
+    const username = document.getElementById('register-username')?.value?.trim();
+    const password = document.getElementById('register-password')?.value;
+    const confirm = document.getElementById('register-confirm')?.value;
+    const errEl = document.getElementById('register-error');
+    if (!username || !password || !confirm) {
+        if (errEl) errEl.textContent = 'Please fill in all fields.';
+        return;
+    }
+    if (password !== confirm) {
+        if (errEl) errEl.textContent = 'Password and confirmation do not match.';
+        return;
+    }
+    if (errEl) errEl.textContent = '';
+    const url = `${config.baseUrl}/auth/register`;
+    axios.post(url, {
+        username: username,
+        password: password,
+        confirmPassword: confirm,
+        role: 'ROLE_CUSTOMER'
+    })
+        .then(() => {
+            return axios.post(`${config.baseUrl}/auth/login`, { username, password });
+        })
+        .then(response => {
+            const data = response.data;
+            if (data && typeof userService !== 'undefined') {
+                userService.saveUser(data);
+                userService.setHeaderLogin();
+                const token = data.token || data.jwt;
+                if (token) axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+                if (typeof productService !== 'undefined' && productService.enableButtons) productService.enableButtons();
+                goToRestaurantScreen();
+            } else {
+                goToRestaurantScreen();
+            }
+        })
+        .catch(err => {
+            const msg = (err.response && err.response.data && (err.response.data.message || err.response.data.error)) || err.response?.status === 400 ? 'Username may already exist.' : 'Registration failed.';
+            if (errEl) errEl.textContent = msg;
+        });
+}
+
 function loginAndGoToRestaurant() {
     const username = document.getElementById('login-username')?.value?.trim();
     const password = document.getElementById('login-password')?.value;
@@ -413,6 +483,10 @@ function startStatusPolling() {
 
 if (typeof window !== 'undefined') {
     window.goToLoginScreen = goToLoginScreen;
+    window.goToRegisterScreen = goToRegisterScreen;
+    window.startOrderOrLogin = startOrderOrLogin;
+    window.deliveryOrLogin = deliveryOrLogin;
+    window.registerAndGoToRestaurant = registerAndGoToRestaurant;
     window.loginAndGoToRestaurant = loginAndGoToRestaurant;
     window.addToOrder = addToOrder;
     window.setOrderQuantity = setOrderQuantity;
