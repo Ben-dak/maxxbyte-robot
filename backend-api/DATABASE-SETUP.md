@@ -42,7 +42,7 @@ Edit your run configuration and add environment variable `DATASOURCE_PASSWORD` =
 Edit `src/main/resources/application.properties` and change the line:
 
 ```properties
-datasource.password=yearup#99
+datasource.password=yearup
 ```
 
 to whatever your MySQL `root` password is (or leave it empty if root has no password):

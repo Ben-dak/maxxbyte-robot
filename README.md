@@ -37,6 +37,8 @@ This program allows users to browse a video game storefront, log in securely, an
 - Utilizes a MySQL database
 - DAO pattern with Spring-managed Beans
 
+**If you see "Access denied for user 'root'@'localhost'" or "Login failed" / SQLException when logging in:** the app’s MySQL password doesn’t match your machine’s MySQL `root` password. See [backend-api/DATABASE-SETUP.md](backend-api/DATABASE-SETUP.md) to set `DATASOURCE_PASSWORD` or configure the correct password.
+
 ---
 
 ## Storefront

@@ -96,7 +96,7 @@ class UserService {
             username: username,
             password: password,
             confirmPassword: confirm,
-            role: 'CUSTOMER'
+            role: 'ROLE_CUSTOMER'
         };
 
         axios.post(url, register)
@@ -142,7 +142,7 @@ class UserService {
     logout()
     {
         localStorage.removeItem('user');
-        axios.defaults.headers.common = {'Authorization': `bearer ${this.currentUser.token}`}
+        delete axios.defaults.headers.common['Authorization'];
         this.currentUser = {};
 
         this.setHeaderLogin();
