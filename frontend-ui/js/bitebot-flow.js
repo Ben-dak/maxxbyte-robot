@@ -395,9 +395,30 @@ function placeOrderAndGoToStatus() {
             goToOrderStatusScreen();
             if (bitebotOrder.orderId) startStatusPolling();
         })
-        .catch(() => {
+        .catch((error) => {
             const errEl = document.getElementById('errors');
-            if (errEl) errEl.innerHTML = '<div class="alert alert-danger">Order could not be placed. Please try again.</div>';
+            let errorMsg = 'Order could not be placed. Please try again.';
+            if (error.response) {
+                const status = error.response.status;
+                const data = error.response.data;
+                const serverMsg = data?.message || data?.error || (typeof data === 'string' ? data : '');
+                if (status === 400) {
+                    errorMsg = serverMsg || 'Invalid order data. Please check your delivery address.';
+                } else if (status === 401 || status === 403) {
+                    errorMsg = 'Session expired. Please sign in again.';
+                } else if (status === 404) {
+                    errorMsg = serverMsg || 'User not found. Please sign in again.';
+                } else if (serverMsg) {
+                    errorMsg = serverMsg;
+                }
+                console.error('Order creation failed:', status, data);
+            } else if (error.request) {
+                errorMsg = 'Unable to reach server. Please check your connection.';
+                console.error('Order creation failed: No response from server');
+            } else {
+                console.error('Order creation failed:', error.message);
+            }
+            if (errEl) errEl.innerHTML = '<div class="alert alert-danger">' + errorMsg + '</div>';
         });
 }
 

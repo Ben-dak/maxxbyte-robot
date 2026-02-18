@@ -74,31 +74,61 @@ public class MySqlProfileDao extends MySqlDaoBase implements ProfileDao
 
     @Override
     public void update(Profile profile) {
-        String sql = "UPDATE profiles SET first_name=?, last_name=?, phone=?, email=?, address=?, city=?, state=?, zip=?, " +
+        String sqlFull = "UPDATE profiles SET first_name=?, last_name=?, phone=?, email=?, address=?, city=?, state=?, zip=?, " +
                 " name_on_card=?, card_number_last4=?, exp_month=?, exp_year=?, billing_address=?, billing_city=?, billing_state=?, billing_zip=?, billing_country=?, delivery_country=? " +
                 " WHERE user_id=?";
+        String sqlBase = "UPDATE profiles SET first_name=?, last_name=?, phone=?, email=?, address=?, city=?, state=?, zip=?, " +
+                " name_on_card=?, card_number_last4=?, exp_month=?, exp_year=?, billing_address=?, billing_city=?, billing_state=?, billing_zip=?, billing_country=? " +
+                " WHERE user_id=?";
         try (Connection conn = getConnection()) {
-            PreparedStatement ps = conn.prepareStatement(sql);
-            ps.setString(1, profile.getFirstName());
-            ps.setString(2, profile.getLastName());
-            ps.setString(3, profile.getPhone());
-            ps.setString(4, profile.getEmail());
-            ps.setString(5, profile.getAddress());
-            ps.setString(6, profile.getCity());
-            ps.setString(7, profile.getState());
-            ps.setString(8, profile.getZip());
-            ps.setString(9, profile.getNameOnCard());
-            ps.setString(10, profile.getCardNumberLast4());
-            ps.setString(11, profile.getExpMonth());
-            ps.setString(12, profile.getExpYear());
-            ps.setString(13, profile.getBillingAddress());
-            ps.setString(14, profile.getBillingCity());
-            ps.setString(15, profile.getBillingState());
-            ps.setString(16, profile.getBillingZip());
-            ps.setString(17, profile.getBillingCountry());
-            ps.setString(18, profile.getDeliveryCountry());
-            ps.setInt(19, profile.getUserId());
-            ps.executeUpdate();
+            try {
+                PreparedStatement ps = conn.prepareStatement(sqlFull);
+                ps.setString(1, profile.getFirstName());
+                ps.setString(2, profile.getLastName());
+                ps.setString(3, profile.getPhone());
+                ps.setString(4, profile.getEmail());
+                ps.setString(5, profile.getAddress());
+                ps.setString(6, profile.getCity());
+                ps.setString(7, profile.getState());
+                ps.setString(8, profile.getZip());
+                ps.setString(9, profile.getNameOnCard());
+                ps.setString(10, profile.getCardNumberLast4());
+                ps.setString(11, profile.getExpMonth());
+                ps.setString(12, profile.getExpYear());
+                ps.setString(13, profile.getBillingAddress());
+                ps.setString(14, profile.getBillingCity());
+                ps.setString(15, profile.getBillingState());
+                ps.setString(16, profile.getBillingZip());
+                ps.setString(17, profile.getBillingCountry());
+                ps.setString(18, profile.getDeliveryCountry());
+                ps.setInt(19, profile.getUserId());
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                if (e.getMessage() != null && e.getMessage().contains("delivery_country")) {
+                    PreparedStatement ps = conn.prepareStatement(sqlBase);
+                    ps.setString(1, profile.getFirstName());
+                    ps.setString(2, profile.getLastName());
+                    ps.setString(3, profile.getPhone());
+                    ps.setString(4, profile.getEmail());
+                    ps.setString(5, profile.getAddress());
+                    ps.setString(6, profile.getCity());
+                    ps.setString(7, profile.getState());
+                    ps.setString(8, profile.getZip());
+                    ps.setString(9, profile.getNameOnCard());
+                    ps.setString(10, profile.getCardNumberLast4());
+                    ps.setString(11, profile.getExpMonth());
+                    ps.setString(12, profile.getExpYear());
+                    ps.setString(13, profile.getBillingAddress());
+                    ps.setString(14, profile.getBillingCity());
+                    ps.setString(15, profile.getBillingState());
+                    ps.setString(16, profile.getBillingZip());
+                    ps.setString(17, profile.getBillingCountry());
+                    ps.setInt(18, profile.getUserId());
+                    ps.executeUpdate();
+                } else {
+                    throw e;
+                }
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

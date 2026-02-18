@@ -41,6 +41,7 @@ CREATE TABLE profiles (
     billing_state VARCHAR(50),
     billing_zip VARCHAR(20),
     billing_country VARCHAR(50),
+    delivery_country VARCHAR(50),
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
