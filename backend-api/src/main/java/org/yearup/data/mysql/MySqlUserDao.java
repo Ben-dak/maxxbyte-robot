@@ -24,7 +24,7 @@ public class MySqlUserDao extends MySqlDaoBase implements UserDao
     @Override
     public User create(User newUser)
     {
-        String sql = "INSERT INTO users (username, hashed_password, role) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO users (username, hashed_password, role, enabled) VALUES (?, ?, ?, ?)";
         String hashedPassword = new BCryptPasswordEncoder().encode(newUser.getPassword());
 
         try (Connection connection = getConnection())
@@ -33,6 +33,7 @@ public class MySqlUserDao extends MySqlDaoBase implements UserDao
             ps.setString(1, newUser.getUsername());
             ps.setString(2, hashedPassword);
             ps.setString(3, newUser.getRole());
+            ps.setBoolean(4, newUser.isActivated());
 
             ps.executeUpdate();
 
@@ -152,7 +153,14 @@ public class MySqlUserDao extends MySqlDaoBase implements UserDao
         String username = row.getString("username");
         String hashedPassword = row.getString("hashed_password");
         String role = row.getString("role");
+        boolean enabled = true;
+        try {
+            enabled = row.getBoolean("enabled");
+        } catch (SQLException ignored) {
+        }
 
-        return new User(userId, username,hashedPassword, role);
+        User user = new User(userId, username, hashedPassword, role);
+        user.setActivated(enabled);
+        return user;
     }
 }
