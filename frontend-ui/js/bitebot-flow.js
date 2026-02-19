@@ -48,7 +48,12 @@ function addToOrder(mealId) {
             imageUrl: config.assets[menuItem.image]
         });
     }
-    goToOrderScreen();
+    const checkoutBar = document.getElementById('saffron-checkout-bar');
+    if (checkoutBar) {
+        checkoutBar.classList.remove('saffron-checkout-bar--hidden');
+    } else {
+        goToOrderScreen();
+    }
 }
 
 function setOrderQuantity(mealId, delta) {
@@ -59,6 +64,15 @@ function setOrderQuantity(mealId, delta) {
         bitebotOrder.items = bitebotOrder.items.filter(i => i.id !== mealId);
     }
     renderOrderScreen();
+    const overlayList = document.getElementById('cart-overlay-items-list');
+    if (overlayList) {
+        renderCartOverlay();
+        if (bitebotOrder.items.length === 0) {
+            closeCartOverlay();
+            const checkoutBar = document.getElementById('saffron-checkout-bar');
+            if (checkoutBar) checkoutBar.classList.add('saffron-checkout-bar--hidden');
+        }
+    }
 }
 
 function renderOrderScreen() {
@@ -91,6 +105,61 @@ function renderOrderScreen() {
     if (subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
     if (taxesEl) taxesEl.textContent = '$' + tax.toFixed(2);
     if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
+}
+
+function openCartOverlay() {
+    const backdrop = document.getElementById('cart-overlay-backdrop');
+    const panel = document.getElementById('cart-overlay-panel');
+    if (!backdrop || !panel) return;
+    renderCartOverlay();
+    backdrop.classList.remove('cart-overlay-backdrop--hidden');
+    panel.classList.remove('cart-overlay-panel--hidden');
+}
+
+function closeCartOverlay() {
+    const backdrop = document.getElementById('cart-overlay-backdrop');
+    const panel = document.getElementById('cart-overlay-panel');
+    if (backdrop) backdrop.classList.add('cart-overlay-backdrop--hidden');
+    if (panel) panel.classList.add('cart-overlay-panel--hidden');
+}
+
+function renderCartOverlay() {
+    const listEl = document.getElementById('cart-overlay-items-list');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    bitebotOrder.items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'cart-overlay-item-row';
+        div.innerHTML = `
+            <img src="${item.imageUrl}" alt="${item.name}" class="cart-overlay-item-thumb">
+            <div class="cart-overlay-item-info">
+                <p class="cart-overlay-item-name">${item.name}</p>
+                <p class="cart-overlay-item-price">$${item.price.toFixed(2)}</p>
+            </div>
+            <div class="cart-overlay-item-qty">
+                <button type="button" onclick="setOrderQuantity('${item.id}', -1)">−</button>
+                <span class="cart-overlay-qty-value">${item.quantity}</span>
+                <button type="button" onclick="setOrderQuantity('${item.id}', 1)">+</button>
+            </div>
+        `;
+        listEl.appendChild(div);
+    });
+    const subtotal = getOrderSubtotal();
+    const tax = getOrderTax();
+    const total = getOrderTotal();
+    const subtotalEl = document.getElementById('cart-overlay-subtotal');
+    const taxEl = document.getElementById('cart-overlay-tax');
+    const totalEl = document.getElementById('cart-overlay-total');
+    const checkoutBtn = document.getElementById('cart-overlay-checkout-btn');
+    if (subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
+    if (taxEl) taxEl.textContent = '$' + tax.toFixed(2);
+    if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
+    if (checkoutBtn) checkoutBtn.textContent = 'CHECK OUT - $' + total.toFixed(2);
+}
+
+function cartOverlayGoToCheckout() {
+    closeCartOverlay();
+    goToPaymentScreen();
 }
 
 function goToLoginScreen() {
@@ -213,6 +282,10 @@ function goToRestaurantScreen() {
         butterChickenImage: config.assets.butterChickenImage
     };
     templateBuilder.build('restaurant-screen', data, 'main');
+    const checkoutBar = document.getElementById('saffron-checkout-bar');
+    if (checkoutBar && bitebotOrder.items.length > 0) {
+        checkoutBar.classList.remove('saffron-checkout-bar--hidden');
+    }
 }
 
 function goToOrderScreen() {
@@ -492,6 +565,9 @@ if (typeof window !== 'undefined') {
     window.setOrderQuantity = setOrderQuantity;
     window.goToRestaurantScreen = goToRestaurantScreen;
     window.goToOrderScreen = goToOrderScreen;
+    window.openCartOverlay = openCartOverlay;
+    window.closeCartOverlay = closeCartOverlay;
+    window.cartOverlayGoToCheckout = cartOverlayGoToCheckout;
     window.goToPaymentScreen = goToPaymentScreen;
     window.confirmPaymentAndGoToReview = confirmPaymentAndGoToReview;
     window.placeOrderAndGoToStatus = placeOrderAndGoToStatus;

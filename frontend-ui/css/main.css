@@ -1,6 +1,6 @@
 body {
     background: #f5f5f5;
-    font-family: "Segoe UI", Arial, sans-serif;
+    font-family: 'Bebas Neue', sans-serif;
 }
 
 header
@@ -79,7 +79,7 @@ header .header-user-icon {
 }
 header .header-welcome,
 header .header-welcome strong {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Bebas Neue', sans-serif;
     font-weight: 400;
     font-size: 0.9rem;
 }
@@ -467,7 +467,7 @@ main > .content-form .cart-item
     color: #fff;
     text-align: center;
     padding: 14px 20px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Bebas Neue', sans-serif;
     font-weight: 400;
     font-size: 1.15rem;
     letter-spacing: 0.06em;
@@ -547,14 +547,14 @@ main > .content-form .cart-item
 
 .login-screen-prompt {
     color: #444;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Bebas Neue', sans-serif;
     font-weight: 400;
     font-size: 1.05rem;
     margin-bottom: 14px;
 }
 
 .login-screen-prompt a {
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Bebas Neue', sans-serif;
     font-weight: 400;
     color: var(--bitebot-red);
     text-decoration: none;
@@ -619,7 +619,7 @@ main > .content-form .cart-item
     align-items: center;
     margin: 6px 0 14px 0;
     color: #555;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Bebas Neue', sans-serif;
     font-weight: 400;
     font-size: 0.85rem;
 }
@@ -634,7 +634,7 @@ main > .content-form .cart-item
 
 .login-screen-divider span {
     padding: 0 14px;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-family: 'Bebas Neue', sans-serif;
     font-weight: 400;
 }
 
@@ -1169,6 +1169,266 @@ body.restaurant-view header {
 }
 
 .btn-add-cart:hover {
+    background: #a6141d;
+}
+
+/* Saffron & Serrano checkout bar – bottom center, visible after add to cart */
+.saffron-checkout-bar {
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 400px;
+    padding: 1rem 1.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.saffron-checkout-bar--hidden {
+    display: none;
+}
+
+.saffron-checkout-btn {
+    background: #fff;
+    color: var(--bitebot-red);
+    border: 2px solid var(--bitebot-red);
+    border-radius: 999px;
+    padding: 12px 2rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.saffron-checkout-btn:hover {
+    background: #f5f5f5;
+}
+
+/* Cart overlay – right-side panel over dimmed restaurant screen */
+.cart-overlay-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 200;
+    transition: opacity 0.2s ease;
+}
+
+.cart-overlay-backdrop--hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.cart-overlay-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 100%;
+    max-width: 420px;
+    height: 100%;
+    background: #fff;
+    box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+    z-index: 201;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    transition: transform 0.25s ease;
+}
+
+.cart-overlay-panel--hidden {
+    transform: translateX(100%);
+    pointer-events: none;
+}
+
+.cart-overlay-title-bar {
+    background: #e0e0e0;
+    padding: 0.75rem 1rem;
+    margin: -1.5rem -1.5rem 1rem -1.5rem;
+}
+
+.cart-overlay-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--bitebot-red);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0;
+    text-align: center;
+}
+
+.cart-overlay-subtotal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #eee;
+}
+
+.cart-overlay-subtotal-label {
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #333;
+}
+
+.cart-overlay-subtotal-note {
+    font-weight: 400;
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: none;
+}
+
+.cart-overlay-subtotal-value {
+    font-weight: 700;
+    color: #333;
+}
+
+.cart-overlay-items-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.cart-overlay-item-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.cart-overlay-item-thumb {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 8px;
+    flex-shrink: 0;
+}
+
+.cart-overlay-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.cart-overlay-item-name {
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #333;
+    margin: 0 0 0.25rem 0;
+}
+
+.cart-overlay-item-price {
+    font-weight: 600;
+    color: var(--bitebot-red);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.cart-overlay-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cart-overlay-item-qty button {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1px solid #c2c2c2;
+    background: #c2c2c2;
+    color: #fff;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cart-overlay-item-qty button:hover {
+    background: #adadad;
+    border-color: #adadad;
+}
+
+.cart-overlay-item-qty .cart-overlay-qty-value {
+    min-width: 1.5rem;
+    text-align: center;
+    font-weight: 600;
+}
+
+.cart-overlay-summary {
+    padding-top: 0.75rem;
+    border-top: 1px solid #eee;
+}
+
+.cart-overlay-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.cart-overlay-total-row {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #222;
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+
+.cart-overlay-actions {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.cart-overlay-keep-shopping {
+    flex: 1;
+    background: #fff;
+    color: var(--bitebot-red);
+    border: 2px solid var(--bitebot-red);
+    border-radius: 12px;
+    padding: 12px 1rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+}
+
+.cart-overlay-keep-shopping:hover {
+    background: #fff5f5;
+}
+
+.cart-overlay-checkout {
+    flex: 1;
+    background: var(--bitebot-red);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 1rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+}
+
+.cart-overlay-checkout:hover {
     background: #a6141d;
 }
 
