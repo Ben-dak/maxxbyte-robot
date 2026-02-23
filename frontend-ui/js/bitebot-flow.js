@@ -305,6 +305,7 @@ function goToBitebotCheckoutScreen() {
     const total = getOrderTotal();
     const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
     const itemCount = bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0);
+    const itemCountText = itemCount + ' ' + (itemCount === 1 ? 'Item' : 'Items');
     const getCheckoutData = (profile) => {
         const p = profile || {};
         const hasAny = p.nameOnCard || p.billingAddress || p.address || p.email || p.cardNumberLast4;
@@ -325,15 +326,26 @@ function goToBitebotCheckoutScreen() {
         const state = p.state || p.billingState || 'TX';
         const zip = p.zip || p.billingZip || '90210';
         bitebotOrder.deliveryAddress = { address: addr, city, state, zip };
+        const orderItems = bitebotOrder.items.map(i => ({
+            name: i.name,
+            quantity: i.quantity,
+            price: i.price.toFixed(2),
+            lineTotal: (i.price * i.quantity).toFixed(2)
+        }));
         return {
             logoUrl: config.assets.logo || '',
             username,
             itemCount,
+            itemCountText,
+            orderItems,
             subtotal: subtotal.toFixed(2),
             tax: tax.toFixed(2),
             total: total.toFixed(2),
             deliveryLine1: addr,
             deliveryLine2: city + ', ' + state + ' ' + zip,
+            deliveryCity: city,
+            deliveryState: state,
+            deliveryZip: zip,
             ...paymentData
         };
     };
@@ -341,13 +353,25 @@ function goToBitebotCheckoutScreen() {
         const fromProfile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : null;
         const fromSession = bitebotOrder.payment;
         const data = getCheckoutData(fromProfile || fromSession);
-        templateBuilder.build('bitebot-checkout-screen', data, 'main');
+        templateBuilder.build('bitebot-checkout-screen', data, 'main', () => {
+            document.body.classList.add('bitebot-checkout-active');
+        }, true);
     };
     if (typeof profileService !== 'undefined') {
         profileService.loadProfileForFlow().then(loadThenShow).catch(loadThenShow);
     } else {
         loadThenShow();
     }
+}
+
+function toggleOrderItemsExpand() {
+    const dropdown = document.getElementById('order-items-dropdown');
+    const expander = document.querySelector('.bitebot-checkout-order-expander');
+    if (!dropdown || !expander) return;
+    const isHidden = dropdown.hidden;
+    dropdown.hidden = !isHidden;
+    expander.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+    expander.classList.toggle('bitebot-checkout-order-expander--open', isHidden);
 }
 
 function returnToCartFromCheckout() {
@@ -361,8 +385,16 @@ function editDeliveryFromCheckout() {
 }
 
 function placeOrderFromCheckoutScreen() {
+    bitebotOrder.orderError = null;
     const cardNumber = document.getElementById('cardNumber')?.value?.trim() || '';
-    const delivery = bitebotOrder.deliveryAddress || {};
+    const getVal = id => document.getElementById(id)?.value?.trim() || '';
+    bitebotOrder.deliveryAddress = {
+        address: getVal('deliveryAddress'),
+        city: getVal('deliveryCity'),
+        state: getVal('deliveryState'),
+        zip: getVal('deliveryZip')
+    };
+    const delivery = bitebotOrder.deliveryAddress;
     const payment = {
         nameOnCard: '',
         cardNumber: cardNumber,
@@ -377,7 +409,11 @@ function placeOrderFromCheckoutScreen() {
     };
     bitebotOrder.payment = payment;
     document.body.classList.remove('bitebot-checkout-active');
-    goToReviewScreen();
+    // Go to order tracker immediately, then submit order in background
+    bitebotOrder.status = 'PLACED';
+    bitebotOrder.statusScreenEnteredAt = Date.now();
+    goToOrderStatusScreen();
+    submitOrderInBackground();
 }
 
 function goToPaymentScreen() {
@@ -531,6 +567,49 @@ function renderReviewScreen() {
     if (el('review-delivery-address')) el('review-delivery-address').textContent = deliveryStr || '—';
 }
 
+function submitOrderInBackground() {
+    const total = getOrderTotal();
+    const p = bitebotOrder.payment || {};
+    const delivery = bitebotOrder.deliveryAddress;
+    const profile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : {};
+    const order = {
+        deliveryAddress: (delivery && delivery.address) || profile.address || p.billingAddress || '',
+        deliveryCity: (delivery && delivery.city) || profile.city || p.billingCity || '',
+        deliveryState: (delivery && delivery.state) || profile.state || p.billingState || '',
+        deliveryZip: (delivery && delivery.zip) || profile.zip || p.billingZip || '',
+        totalAmount: total,
+        status: 'PLACED'
+    };
+    if (typeof ordersService === 'undefined' || !ordersService.createOrder) {
+        bitebotOrder.orderError = 'Order service is not available. Please try again later.';
+        const data = getOrderStatusTemplateData();
+        const main = document.getElementById('main');
+        if (main && main.querySelector('.order-status-screen')) {
+            templateBuilder.build('order-status-screen', data, 'main');
+        }
+        return;
+    }
+    ordersService.createOrder(order)
+        .then(response => {
+            const data = response.data;
+            bitebotOrder.orderId = (data && data.orderId != null) ? data.orderId : (data && data.id != null) ? data.id : null;
+            bitebotOrder.items = [];
+            bitebotOrder.orderError = null;
+            if (bitebotOrder.orderId) startStatusPolling();
+            const main = document.getElementById('main');
+            if (main && main.querySelector('.order-status-screen')) {
+                templateBuilder.build('order-status-screen', getOrderStatusTemplateData(), 'main');
+            }
+        })
+        .catch(() => {
+            bitebotOrder.orderError = 'Order could not be placed. Please try again.';
+            const main = document.getElementById('main');
+            if (main && main.querySelector('.order-status-screen')) {
+                templateBuilder.build('order-status-screen', getOrderStatusTemplateData(), 'main');
+            }
+        });
+}
+
 function placeOrderAndGoToStatus() {
     const total = getOrderTotal();
     const p = bitebotOrder.payment || {};
@@ -544,6 +623,13 @@ function placeOrderAndGoToStatus() {
         totalAmount: total,
         status: 'PLACED'
     };
+    if (typeof ordersService === 'undefined' || !ordersService.createOrder) {
+        bitebotOrder.orderError = 'Order service is not available. Please try again later.';
+        bitebotOrder.status = 'PLACED';
+        bitebotOrder.statusScreenEnteredAt = Date.now();
+        goToOrderStatusScreen();
+        return;
+    }
     ordersService.createOrder(order)
         .then(response => {
             const data = response.data;
@@ -551,12 +637,15 @@ function placeOrderAndGoToStatus() {
             bitebotOrder.status = 'PLACED';
             bitebotOrder.items = [];
             bitebotOrder.statusScreenEnteredAt = Date.now();
+            bitebotOrder.orderError = null;
             goToOrderStatusScreen();
             if (bitebotOrder.orderId) startStatusPolling();
         })
         .catch(() => {
-            const errEl = document.getElementById('errors');
-            if (errEl) errEl.innerHTML = '<div class="alert alert-danger">Order could not be placed. Please try again.</div>';
+            bitebotOrder.orderError = 'Order could not be placed. Please try again.';
+            bitebotOrder.status = 'PLACED';
+            bitebotOrder.statusScreenEnteredAt = Date.now();
+            goToOrderStatusScreen();
         });
 }
 
@@ -579,13 +668,24 @@ function getOrderStatusTemplateData() {
         steps.connector1Class = 'done';
         steps.connector2Class = 'done';
     }
+    const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    const orderId = bitebotOrder.orderId != null ? String(bitebotOrder.orderId) : '—';
     return {
         ...steps,
+        logoUrl: config.assets.logo || '',
+        redLogoUrl: config.assets.redLogo || config.assets.logo || '',
+        username,
+        orderId,
+        orderError: bitebotOrder.orderError || '',
         statusPlacedImage: config.assets.statusPlacedImage,
         statusEnRouteImage: config.assets.statusEnRouteImage,
         statusArrivedImage: config.assets.statusArrivedImage,
         statusLogo: config.assets.statusLogo || config.assets.logo
     };
+}
+
+function returnFromOrderTracker() {
+    goToRestaurantScreen();
 }
 
 function updateStatusLogoPosition() {
@@ -618,7 +718,7 @@ function startStatusLogoUpdater() {
 
 function goToOrderStatusScreen() {
     const data = getOrderStatusTemplateData();
-    templateBuilder.build('order-status-screen', data, 'main', startStatusLogoUpdater);
+    templateBuilder.build('order-status-screen', data, 'main');
 }
 
 function startStatusPolling() {
@@ -632,7 +732,7 @@ function startStatusPolling() {
                     const data = getOrderStatusTemplateData();
                     const main = document.getElementById('main');
                     if (main && main.querySelector('.order-status-screen')) {
-                        templateBuilder.build('order-status-screen', data, 'main', startStatusLogoUpdater);
+                        templateBuilder.build('order-status-screen', data, 'main');
                     }
                 }
             })
@@ -655,10 +755,12 @@ if (typeof window !== 'undefined') {
     window.closeCartOverlay = closeCartOverlay;
     window.cartOverlayGoToCheckout = cartOverlayGoToCheckout;
     window.goToBitebotCheckoutScreen = goToBitebotCheckoutScreen;
+    window.toggleOrderItemsExpand = toggleOrderItemsExpand;
     window.returnToCartFromCheckout = returnToCartFromCheckout;
     window.editDeliveryFromCheckout = editDeliveryFromCheckout;
     window.placeOrderFromCheckoutScreen = placeOrderFromCheckoutScreen;
     window.goToPaymentScreen = goToPaymentScreen;
     window.confirmPaymentAndGoToReview = confirmPaymentAndGoToReview;
     window.placeOrderAndGoToStatus = placeOrderAndGoToStatus;
+    window.returnFromOrderTracker = returnFromOrderTracker;
 }

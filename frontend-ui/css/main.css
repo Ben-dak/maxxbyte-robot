@@ -1590,107 +1590,200 @@ body.restaurant-view header {
     margin-top: 0.5rem;
 }
 
-/* Screen 7: Order status */
-.order-status-screen {
-    text-align: center;
-    background: #c62828;
-}
-.order-status-screen h2 { margin-bottom: 1rem; color: #fff; }
-
-/* Single unified status bar: bar on top, checkmarks below */
-.status-unified-bar {
-    position: relative;
-    width: 100%;
-    max-width: 520px;
-    margin: 0 auto 1.5rem;
-    padding-top: 8px;
-    min-height: 140px;
-}
-.status-bar-track {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 8px;
-    height: 8px;
-    background: #000;
-    border-radius: 4px;
-    box-shadow: inset 0 1px 3px rgba(0,0,0,0.2);
-}
-.status-logo-runner {
-    position: absolute;
-    left: 0;
-    top: 12px;
-    transform: translateY(-50%) translateX(-50%);
-    width: 48px;
-    height: 48px;
-    z-index: 2;
-    transition: left 0.5s linear;
-}
-.status-moving-logo {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-.status-step {
-    position: absolute;
+/* Order Tracker screen – red header, thank you box, green progress bar */
+.order-tracker-screen {
+    min-height: 100vh;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 6px 8px;
-    border-radius: 12px;
-    background: #f0f0f0;
-    opacity: 0.7;
-    z-index: 1;
-    top: 32px;
-}
-.status-step-1 { left: 0; transform: translateX(-50%); }
-.status-step-2 { left: 50%; transform: translateX(-50%); }
-.status-step-3 { left: 100%; transform: translateX(-50%); }
-.status-step.active {
-    opacity: 1;
-    background: #fff;
-    box-shadow: 0 4px 12px rgba(197, 31, 44, 0.2);
-}
-.status-step.done {
-    opacity: 1;
-    background: #e8f5e9;
-}
-.status-step .status-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff;
-}
-.status-step .status-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-.status-step span {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: #333;
-    white-space: nowrap;
-}
-.status-message {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 0.9rem;
+    background: #f5f5f5;
+    margin: 0;
+    padding: 0;
+    max-width: none;
 }
 
-/* BiteBot checkout screen – full page after second “Check out” click */
+.order-tracker-screen .bitebot-checkout-header {
+    margin: 0;
+}
+
+.order-tracker-body {
+    flex: 1;
+    padding: 2rem 1.5rem;
+    max-width: 700px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.order-tracker-title-banner {
+    width: 100%;
+    background: #e6e0dd;
+    padding: 0.6rem 0 0.6rem 1rem;
+    margin: 0;
+    text-align: left;
+}
+
+.order-tracker-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.25rem;
+    font-weight: 700;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--bitebot-red);
+    paint-order: stroke fill;
+    letter-spacing: 0.08em;
+    margin: 0;
+    text-align: left;
+}
+
+.order-tracker-error {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.order-tracker-confirmation-box {
+    background: #fff;
+    border: 2px solid var(--bitebot-red);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.order-tracker-thank-you-banner {
+    background: #9b141c;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+    letter-spacing: 0.06em;
+    text-align: left;
+    padding: 0.75rem 1rem;
+}
+
+.order-tracker-confirmation-inner {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem 1.5rem;
+}
+
+.order-tracker-robot-icon {
+    width: 48px;
+    height: 48px;
+    object-fit: contain;
+    flex-shrink: 0;
+    background: transparent !important;
+    display: block;
+}
+
+.order-tracker-confirmation-text {
+    flex: 1;
+    min-width: 0;
+}
+
+.order-tracker-order-msg {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+}
+
+.order-tracker-order-num {
+    color: #000;
+    font-weight: 700;
+}
+
+.order-tracker-was-placed {
+    color: var(--bitebot-red);
+}
+
+.order-tracker-email-msg {
+    margin: 0;
+    font-size: 0.9rem;
+    color: #555;
+    line-height: 1.4;
+}
+
+.order-tracker-progress {
+    display: flex;
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: linear-gradient(90deg, #66bb6a, #43a047);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.order-tracker-step {
+    flex: 1;
+    text-align: center;
+    padding: 1rem 0.5rem;
+    font-family: 'Bebas Neue', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.04em;
+    color: #fff;
+}
+
+.order-tracker-step.active {
+    background: rgba(255,255,255,0.2);
+}
+
+.order-tracker-step.done {
+    background: rgba(0,0,0,0.1);
+}
+
+.order-tracker-footer {
+    text-align: center;
+    padding: 2rem 0 1rem;
+}
+
+.order-tracker-footer-logo {
+    height: 28px;
+    width: auto;
+    opacity: 0.8;
+}
+
+/* When checkout screen is visible: hide site header so only one red banner shows */
 body.bitebot-checkout-active #header-user,
+body:has(.bitebot-checkout-screen) #header-user,
 body.bitebot-checkout-active #errors,
 body.bitebot-checkout-active #login {
     display: none !important;
 }
-body.bitebot-checkout-active main#main {
-    padding-top: 0;
-    margin-top: 0;
+body:has(.bitebot-checkout-screen) #errors,
+body:has(.bitebot-checkout-screen) #login {
+    display: none !important;
+}
+
+body:has(.order-status-screen) #header-user,
+body:has(.order-status-screen) #errors,
+body:has(.order-status-screen) #login {
+    display: none !important;
+}
+body:has(.order-status-screen) main#main {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+body:has(.order-status-screen) footer {
+    display: none !important;
+}
+body:has(.order-status-screen) {
+    margin: 0;
+    padding: 0;
+}
+body.bitebot-checkout-active main#main,
+body:has(.bitebot-checkout-screen) main#main {
+    padding: 0;
+    margin: 0;
+    max-width: none;
+}
+body.bitebot-checkout-active footer,
+body:has(.bitebot-checkout-screen) footer {
+    display: none !important;
+}
+
+body:has(.bitebot-checkout-screen) {
+    margin: 0;
+    padding: 0;
 }
 
 .bitebot-checkout-screen {
@@ -1699,18 +1792,44 @@ body.bitebot-checkout-active main#main {
     flex-direction: column;
     background: #f5f5f5;
     margin: 0;
+    padding: 0;
+    max-width: none;
 }
 
-/* Single red banner at very top – matches screenshot: < RETURN TO CART | BiteBot logo | Hello! SIGN OUT */
+/* Single red banner at top – screenshot style: solid red, white text, SIGN OUT = red button */
 .bitebot-checkout-header {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
     align-items: center;
-    justify-content: space-between;
-    padding: 1rem 1.5rem;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    min-height: 56px;
     background: var(--bitebot-red);
     color: #fff;
     flex-shrink: 0;
-    position: relative;
+    width: 100%;
+    max-width: 100vw;
+    box-sizing: border-box;
+    margin: 0;
+}
+
+.bitebot-checkout-header-left {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.bitebot-checkout-header-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bitebot-checkout-header-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
 }
 
 .bitebot-checkout-back {
@@ -1718,29 +1837,17 @@ body.bitebot-checkout-active main#main {
     text-decoration: none;
     font-weight: 700;
     font-size: 0.9rem;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.02em;
 }
 
 .bitebot-checkout-back:hover {
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.bitebot-checkout-logo-wrap {
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    color: rgba(255, 255, 255, 0.92);
 }
 
 .bitebot-checkout-logo {
-    height: 36px;
+    height: 40px;
     width: auto;
     display: block;
-}
-
-.bitebot-checkout-user {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
 }
 
 .bitebot-checkout-hello {
@@ -1752,17 +1859,29 @@ body.bitebot-checkout-active main#main {
     color: #fff;
     text-decoration: none;
     font-weight: 700;
-    font-size: 0.85rem;
-    letter-spacing: 0.04em;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    padding: 0.4rem 0.75rem;
+    border: none;
+    border-radius: 4px;
+    background: #9b141c;
 }
 
 .bitebot-checkout-signout:hover {
-    color: rgba(255, 255, 255, 0.9);
+    background: #851118;
+    color: #fff;
 }
 
 .bitebot-checkout-user-icon {
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     opacity: 0.95;
+}
+
+.bitebot-checkout-title-bar {
+    width: 100%;
+    background: #e8e8e8;
+    padding: 0.6rem 0 0.6rem 1.5rem;
+    margin: 0;
 }
 
 .bitebot-checkout-body {
@@ -1775,16 +1894,15 @@ body.bitebot-checkout-active main#main {
 
 .bitebot-checkout-title {
     font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.5rem;
+    font-size: 3.5rem;
     font-weight: 700;
     color: #fff;
     -webkit-text-stroke: 2px var(--bitebot-red);
     text-stroke: 2px var(--bitebot-red);
     letter-spacing: 0.08em;
-    text-align: center;
-    margin: 0 0 2rem 0;
-    padding: 0.5rem 0;
-    background: #e8e8e8;
+    text-align: left;
+    margin: 0;
+    padding: 0;
 }
 
 .bitebot-checkout-columns {
@@ -1808,6 +1926,13 @@ body.bitebot-checkout-active main#main {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 }
 
+.bitebot-checkout-card-block,
+.bitebot-checkout-delivery-block {
+    background: #e6e0dd;
+    display: flex;
+    flex-direction: column;
+}
+
 .bitebot-checkout-block-title {
     font-family: 'Bebas Neue', sans-serif;
     font-size: 1.15rem;
@@ -1822,9 +1947,35 @@ body.bitebot-checkout-active main#main {
     gap: 0.5rem;
 }
 
+.bitebot-checkout-order-block {
+    text-transform: none;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+.bitebot-checkout-order-block .bitebot-checkout-block-title {
+    justify-content: center;
+    text-align: center;
+    text-transform: none !important;
+}
+
 .bitebot-checkout-card-icon {
-    font-size: 1rem;
-    opacity: 0.8;
+    font-size: 2.25rem;
+    color: #000;
+}
+
+.bitebot-checkout-delivery-heading {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--bitebot-red);
+    margin: 1.25rem 0 0.75rem 0;
+}
+
+.bitebot-checkout-input-state {
+    flex: 0 0 70px;
+}
+
+.bitebot-checkout-input-zip {
+    flex: 0 0 90px;
 }
 
 .bitebot-checkout-field {
@@ -1864,16 +2015,43 @@ body.bitebot-checkout-active main#main {
 }
 
 .bitebot-checkout-edit-btn {
-    background: none;
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin: -12px -12px 0 0;
+    padding: 0;
     border: none;
-    padding: 0.25rem;
-    cursor: pointer;
-    color: var(--bitebot-red);
+    border-radius: 50%;
+    background: var(--bitebot-red);
+    color: #fff;
     font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.bitebot-checkout-edit-btn::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 16px;
+    height: 16px;
+    border: 1.5px solid #fff;
+    background: transparent;
+    border-radius: 1px;
+}
+
+.bitebot-checkout-edit-btn i {
+    position: relative;
+    z-index: 1;
+    transform: translate(5px, -5px);
 }
 
 .bitebot-checkout-edit-btn:hover {
-    opacity: 0.85;
+    opacity: 0.9;
 }
 
 .bitebot-checkout-address-line1,
@@ -1886,8 +2064,11 @@ body.bitebot-checkout-active main#main {
 .bitebot-checkout-delivery-options {
     display: flex;
     flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
     gap: 1rem;
-    margin-top: 1rem;
+    margin-top: auto;
+    padding-top: 1rem;
 }
 
 .bitebot-checkout-delivery-opt {
@@ -1902,10 +2083,61 @@ body.bitebot-checkout-active main#main {
     color: var(--bitebot-red);
 }
 
-.bitebot-checkout-item-count {
-    margin: 0 0 1rem 0;
+.bitebot-checkout-order-block .bitebot-checkout-item-count,
+.bitebot-checkout-order-block .bitebot-checkout-order-row {
+    text-transform: none;
+}
+
+.bitebot-checkout-order-expander {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin: 0 0 0.5rem 0;
+    padding: 0.5rem 0;
     font-size: 0.95rem;
     color: #333;
+    border: none;
+    border-bottom: 1px solid #ddd;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+}
+
+.bitebot-checkout-order-expander:hover {
+    color: #000;
+}
+
+.bitebot-checkout-order-expander-icon {
+    font-size: 0.75rem;
+    transition: transform 0.2s ease;
+}
+
+.bitebot-checkout-order-expander--open .bitebot-checkout-order-expander-icon {
+    transform: rotate(180deg);
+}
+
+.bitebot-checkout-order-items-dropdown {
+    padding: 0.5rem 0 1rem 0;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.bitebot-checkout-order-item-line {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 0.35rem;
+}
+
+.bitebot-checkout-item-count {
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
+    font-size: 0.95rem;
+    color: #333;
+    border-bottom: 1px solid #ddd;
 }
 
 .bitebot-checkout-order-rows {
@@ -1925,6 +2157,8 @@ body.bitebot-checkout-active main#main {
     font-size: 1.15rem;
     margin-top: 0.75rem;
     margin-bottom: 0;
+    padding-top: 0.75rem;
+    border-top: 1px solid #ddd;
 }
 
 .bitebot-checkout-terms {

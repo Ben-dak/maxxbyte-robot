@@ -1,23 +1,46 @@
-<section class="screen order-status-screen">
-    <h2>Order Status</h2>
-    <div class="status-unified-bar">
-        <div class="status-bar-track"></div>
-        <div class="status-logo-runner">
-            <img src="{{statusLogo}}" alt="" class="status-moving-logo">
+<section class="screen order-status-screen order-tracker-screen">
+    <header class="bitebot-checkout-header order-tracker-header">
+        <div class="bitebot-checkout-header-left">
+            <a href="#" class="bitebot-checkout-back" onclick="returnFromOrderTracker(); return false;">&lt; RETURN TO CART</a>
         </div>
-        <div class="status-step status-step-1 {{step1Class}}">
-            <div class="status-icon"><img src="{{statusPlacedImage}}" alt="Order placed"></div>
-            <span>Order Placed</span>
+        <div class="bitebot-checkout-header-center">
+            <img class="bitebot-checkout-logo" src="{{logoUrl}}" alt="BiteBot">
         </div>
-        <div class="status-step status-step-2 {{step2Class}}">
-            <div class="status-icon"><img src="{{statusEnRouteImage}}" alt="Order en route"></div>
-            <span>Order En Route</span>
+        <div class="bitebot-checkout-header-right">
+            <span class="bitebot-checkout-hello">Hello {{username}}!</span>
+            <a href="#" class="bitebot-checkout-signout" onclick="userService.logout(); return false;">SIGN OUT</a>
+            <i class="fa-solid fa-user bitebot-checkout-user-icon"></i>
         </div>
-        <div class="status-step status-step-3 {{step3Class}}">
-            <div class="status-icon"><img src="{{statusArrivedImage}}" alt="Order arrived"></div>
-            <span>Order Arrived</span>
-        </div>
+    </header>
+
+    <div class="order-tracker-title-banner">
+        <h1 class="order-tracker-title">ORDER TRACKER</h1>
     </div>
-    <p class="status-message">Status updates every 10 minutes.</p>
-    <button type="button" class="btn btn-outline-secondary mt-3" onclick="loadHome()">Back to Home</button>
+
+    <div class="order-tracker-body">
+        {{#orderError}}
+        <div class="order-tracker-error" id="order-tracker-error">{{orderError}}</div>
+        {{/orderError}}
+
+        <div class="order-tracker-confirmation-box">
+            <div class="order-tracker-thank-you-banner">THANK YOU FOR YOUR ORDER</div>
+            <div class="order-tracker-confirmation-inner">
+                <img src="{{redLogoUrl}}" alt="BiteBot" class="order-tracker-robot-icon">
+                <div class="order-tracker-confirmation-text">
+                    <p class="order-tracker-order-msg"><span class="order-tracker-order-num">ORDER #{{orderId}}</span> <span class="order-tracker-was-placed">WAS SUCCESSFULLY PLACED.</span></p>
+                    <p class="order-tracker-email-msg">You should receive a confirmation email shortly containing your order number and the store information.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-tracker-progress">
+            <div class="order-tracker-step {{step1Class}}"><span>ORDER PLACED</span></div>
+            <div class="order-tracker-step {{step2Class}}"><span>IN TRANSIT</span></div>
+            <div class="order-tracker-step {{step3Class}}"><span>DELIVERED</span></div>
+        </div>
+
+        <footer class="order-tracker-footer">
+            <img src="{{logoUrl}}" alt="BiteBot" class="order-tracker-footer-logo">
+        </footer>
+    </div>
 </section>

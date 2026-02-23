@@ -1,19 +1,23 @@
 <section class="screen bitebot-checkout-screen">
     <header class="bitebot-checkout-header">
-        <a href="#" class="bitebot-checkout-back" onclick="returnToCartFromCheckout(); return false;">&lt; RETURN TO CART</a>
-        <div class="bitebot-checkout-logo-wrap">
+        <div class="bitebot-checkout-header-left">
+            <a href="#" class="bitebot-checkout-back" onclick="returnToCartFromCheckout(); return false;">&lt; RETURN TO CART</a>
+        </div>
+        <div class="bitebot-checkout-header-center">
             <img class="bitebot-checkout-logo" src="{{logoUrl}}" alt="BiteBot">
         </div>
-        <div class="bitebot-checkout-user">
+        <div class="bitebot-checkout-header-right">
             <span class="bitebot-checkout-hello">Hello {{username}}!</span>
             <a href="#" class="bitebot-checkout-signout" onclick="userService.logout(); return false;">SIGN OUT</a>
             <i class="fa-solid fa-user bitebot-checkout-user-icon"></i>
         </div>
     </header>
 
-    <div class="bitebot-checkout-body">
+    <div class="bitebot-checkout-title-bar">
         <h1 class="bitebot-checkout-title">CHECKOUT</h1>
+    </div>
 
+    <div class="bitebot-checkout-body">
         <div class="bitebot-checkout-columns">
             <div class="bitebot-checkout-left">
                 <div class="bitebot-checkout-block bitebot-checkout-card-block">
@@ -28,6 +32,16 @@
                     </div>
                     <div class="bitebot-checkout-field">
                         <input type="text" id="billingZip" class="bitebot-checkout-input" placeholder="Billing ZIP Code" value="{{billingZip}}">
+                    </div>
+
+                    <h3 class="bitebot-checkout-delivery-heading">Delivery address</h3>
+                    <div class="bitebot-checkout-field">
+                        <input type="text" id="deliveryAddress" class="bitebot-checkout-input" placeholder="Street address" value="{{deliveryLine1}}">
+                    </div>
+                    <div class="bitebot-checkout-row-fields">
+                        <input type="text" id="deliveryCity" class="bitebot-checkout-input" placeholder="City" value="{{deliveryCity}}">
+                        <input type="text" id="deliveryState" class="bitebot-checkout-input bitebot-checkout-input-state" placeholder="State" value="{{deliveryState}}">
+                        <input type="text" id="deliveryZip" class="bitebot-checkout-input bitebot-checkout-input-zip" placeholder="ZIP" value="{{deliveryZip}}">
                     </div>
                 </div>
 
@@ -44,13 +58,24 @@
 
             <div class="bitebot-checkout-right">
                 <div class="bitebot-checkout-block bitebot-checkout-order-block">
-                    <h2 class="bitebot-checkout-block-title">YOUR ORDER</h2>
-                    <p class="bitebot-checkout-item-count">{{itemCount}} Items</p>
+                    <h2 class="bitebot-checkout-block-title" style="text-transform: none;">Your order</h2>
+                    <button type="button" class="bitebot-checkout-order-expander" onclick="toggleOrderItemsExpand()" aria-expanded="false">
+                        <span class="bitebot-checkout-order-expander-text">{{itemCountText}}</span>
+                        <i class="fa-solid fa-chevron-down bitebot-checkout-order-expander-icon"></i>
+                    </button>
+                    <div id="order-items-dropdown" class="bitebot-checkout-order-items-dropdown" hidden>
+                        {{#orderItems}}
+                        <div class="bitebot-checkout-order-item-line">
+                            <span>{{name}} × {{quantity}}</span>
+                            <span>${{lineTotal}}</span>
+                        </div>
+                        {{/orderItems}}
+                    </div>
                     <div class="bitebot-checkout-order-rows">
-                        <div class="bitebot-checkout-order-row"><span>Food And Beverage</span><span>${{subtotal}}</span></div>
+                        <div class="bitebot-checkout-order-row"><span>Food and Beverage</span><span>${{subtotal}}</span></div>
                         <div class="bitebot-checkout-order-row"><span>Delivery Fee</span><span>FREE</span></div>
                         <div class="bitebot-checkout-order-row"><span>Tax</span><span>${{tax}}</span></div>
-                        <div class="bitebot-checkout-order-row bitebot-checkout-order-total"><span>TOTAL</span><span>${{total}}</span></div>
+                        <div class="bitebot-checkout-order-row bitebot-checkout-order-total"><span>Total</span><span>${{total}}</span></div>
                     </div>
                     <p class="bitebot-checkout-terms">By placing your order you agree to our Terms of Use and that you are at least 13 years old.</p>
                     <button type="button" class="btn bitebot-checkout-place-btn" onclick="placeOrderFromCheckoutScreen()">PLACE ORDER - ${{total}}</button>

@@ -2,11 +2,12 @@ let templateBuilder = {};
 
 class TemplateBuilder
 {
-    build(templateName, value, target, callback)
+    build(templateName, value, target, callback, cacheBust)
     {
         const targetEl = document.getElementById(target);
         if (!targetEl) return;
-        axios.get(`templates/${templateName}.html`)
+        const url = `templates/${templateName}.html` + (cacheBust ? '?v=' + Date.now() : '');
+        axios.get(url)
             .then(response => {
                 try
                 {
