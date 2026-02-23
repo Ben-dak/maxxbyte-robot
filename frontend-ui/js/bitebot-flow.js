@@ -159,7 +159,7 @@ function renderCartOverlay() {
 
 function cartOverlayGoToCheckout() {
     closeCartOverlay();
-    goToPaymentScreen();
+    goToBitebotCheckoutScreen();
 }
 
 function goToLoginScreen() {
@@ -292,6 +292,92 @@ function goToOrderScreen() {
     document.body.classList.remove('restaurant-view');
     templateBuilder.build('order-screen', {}, 'main');
     setTimeout(renderOrderScreen, 50);
+}
+
+function goToBitebotCheckoutScreen() {
+    if (!bitebotOrder.items.length) {
+        const errEl = document.getElementById('errors');
+        if (errEl) errEl.innerHTML = '<div class="alert alert-warning">Add at least one item to your order.</div>';
+        return;
+    }
+    const subtotal = getOrderSubtotal();
+    const tax = getOrderTax();
+    const total = getOrderTotal();
+    const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    const itemCount = bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0);
+    const getCheckoutData = (profile) => {
+        const p = profile || {};
+        const hasAny = p.nameOnCard || p.billingAddress || p.address || p.email || p.cardNumberLast4;
+        const defaultPayment = {
+            cardNumberDisplay: '4111 1111 1111 1111',
+            expMonth: '12',
+            expYear: '28',
+            billingZip: '75001'
+        };
+        const paymentData = hasAny ? {
+            cardNumberDisplay: (p.cardNumberLast4) ? '•••• ' + p.cardNumberLast4 : (p.cardNumber || ''),
+            expMonth: p.expMonth || '',
+            expYear: (p.expYear && p.expYear.length === 4) ? p.expYear.slice(-2) : (p.expYear || ''),
+            billingZip: p.billingZip || p.zip || ''
+        } : defaultPayment;
+        const addr = p.address || p.billingAddress || '12345 SESAME ST';
+        const city = p.city || p.billingCity || 'LALA LAND';
+        const state = p.state || p.billingState || 'TX';
+        const zip = p.zip || p.billingZip || '90210';
+        bitebotOrder.deliveryAddress = { address: addr, city, state, zip };
+        return {
+            logoUrl: config.assets.logo || '',
+            username,
+            itemCount,
+            subtotal: subtotal.toFixed(2),
+            tax: tax.toFixed(2),
+            total: total.toFixed(2),
+            deliveryLine1: addr,
+            deliveryLine2: city + ', ' + state + ' ' + zip,
+            ...paymentData
+        };
+    };
+    const loadThenShow = () => {
+        const fromProfile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : null;
+        const fromSession = bitebotOrder.payment;
+        const data = getCheckoutData(fromProfile || fromSession);
+        templateBuilder.build('bitebot-checkout-screen', data, 'main');
+    };
+    if (typeof profileService !== 'undefined') {
+        profileService.loadProfileForFlow().then(loadThenShow).catch(loadThenShow);
+    } else {
+        loadThenShow();
+    }
+}
+
+function returnToCartFromCheckout() {
+    document.body.classList.remove('bitebot-checkout-active');
+    goToRestaurantScreen();
+    setTimeout(openCartOverlay, 100);
+}
+
+function editDeliveryFromCheckout() {
+    returnToCartFromCheckout();
+}
+
+function placeOrderFromCheckoutScreen() {
+    const cardNumber = document.getElementById('cardNumber')?.value?.trim() || '';
+    const delivery = bitebotOrder.deliveryAddress || {};
+    const payment = {
+        nameOnCard: '',
+        cardNumber: cardNumber,
+        cardNumberLast4: cardNumber.length >= 4 ? cardNumber.slice(-4) : '',
+        expMonth: document.getElementById('expMonth')?.value?.trim() || '',
+        expYear: document.getElementById('expYear')?.value?.trim() || '',
+        billingZip: document.getElementById('billingZip')?.value?.trim() || '',
+        billingAddress: delivery.address || '',
+        billingCity: delivery.city || '',
+        billingState: delivery.state || '',
+        billingZip: delivery.zip || ''
+    };
+    bitebotOrder.payment = payment;
+    document.body.classList.remove('bitebot-checkout-active');
+    goToReviewScreen();
 }
 
 function goToPaymentScreen() {
@@ -568,6 +654,10 @@ if (typeof window !== 'undefined') {
     window.openCartOverlay = openCartOverlay;
     window.closeCartOverlay = closeCartOverlay;
     window.cartOverlayGoToCheckout = cartOverlayGoToCheckout;
+    window.goToBitebotCheckoutScreen = goToBitebotCheckoutScreen;
+    window.returnToCartFromCheckout = returnToCartFromCheckout;
+    window.editDeliveryFromCheckout = editDeliveryFromCheckout;
+    window.placeOrderFromCheckoutScreen = placeOrderFromCheckoutScreen;
     window.goToPaymentScreen = goToPaymentScreen;
     window.confirmPaymentAndGoToReview = confirmPaymentAndGoToReview;
     window.placeOrderAndGoToStatus = placeOrderAndGoToStatus;
