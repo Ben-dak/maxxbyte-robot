@@ -19,6 +19,7 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
     PRIMARY KEY (user_id)
 );
 
