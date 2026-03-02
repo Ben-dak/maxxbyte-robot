@@ -1,0 +1,44 @@
+<section class="screen order-placed-screen">
+    <header class="bitebot-checkout-header">
+        <div class="bitebot-checkout-header-left">
+            <a href="#" class="bitebot-checkout-back" onclick="returnFromOrderPlaced(); return false;">&lt; RETURN TO CART</a>
+        </div>
+        <div class="bitebot-checkout-header-center">
+            <img class="bitebot-checkout-logo" src="{{logoUrl}}" alt="BiteBot">
+        </div>
+        <div class="bitebot-checkout-header-right">
+            <span class="bitebot-checkout-hello">Hello {{displayName}}!</span>
+            <a href="#" class="bitebot-checkout-signout" onclick="userService.logout(); return false;">SIGN OUT</a>
+            <i class="fa-solid fa-user bitebot-checkout-user-icon"></i>
+        </div>
+    </header>
+
+    <div class="order-placed-title-banner">
+        <h1 class="order-placed-title">ORDER PLACED</h1>
+    </div>
+
+    <div class="order-placed-body">
+        {{#orderError}}
+        <div class="order-placed-error" id="order-placed-error">{{orderError}}</div>
+        {{/orderError}}
+
+        <div class="order-placed-confirmation-box">
+            <div class="order-placed-thank-you">THANK YOU FOR YOUR ORDER</div>
+            <div class="order-placed-inner">
+                <img src="{{redLogoUrl}}" alt="BiteBot" class="order-placed-robot-icon">
+                <div class="order-placed-message">
+                    <p class="order-placed-delivering">BITEBOT IS DELIVERING THIS ORDER</p>
+                    <p class="order-placed-email-msg">You should receive a confirmation email shortly containing your order number and the store information.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="order-placed-actions">
+            <button type="button" class="btn order-placed-track-btn" onclick="goToOrderStatusScreen()">TRACK ORDER</button>
+        </div>
+
+        <footer class="order-placed-footer">
+            <img src="{{logoUrl}}" alt="BiteBot" class="order-placed-footer-logo">
+        </footer>
+    </div>
+</section>

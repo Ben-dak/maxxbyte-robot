@@ -17,7 +17,8 @@ let bitebotOrder = {
     deliveryAddress: null,
     orderId: null,
     status: 'PLACED',
-    statusScreenEnteredAt: null
+    statusScreenEnteredAt: null,
+    lastOrderSnapshot: null
 };
 let statusLogoUpdaterIntervalId = null;
 
@@ -31,6 +32,29 @@ function getOrderTax() {
 
 function getOrderTotal() {
     return getOrderSubtotal() + getOrderTax();
+}
+
+function saveOrderSnapshot() {
+    if (!bitebotOrder.items.length) return;
+    bitebotOrder.lastOrderSnapshot = {
+        items: bitebotOrder.items.map(i => ({
+            name: i.name,
+            quantity: i.quantity,
+            price: i.price,
+            lineTotal: (i.price * i.quantity).toFixed(2)
+        })),
+        subtotal: getOrderSubtotal().toFixed(2),
+        tax: getOrderTax().toFixed(2),
+        total: getOrderTotal().toFixed(2),
+        totalItems: bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0)
+    };
+}
+
+function updateHeaderCartCount() {
+    const el = document.getElementById('cart-items');
+    if (!el) return;
+    const count = bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0);
+    el.textContent = count;
 }
 
 function addToOrder(mealId) {
@@ -48,6 +72,7 @@ function addToOrder(mealId) {
             imageUrl: config.assets[menuItem.image]
         });
     }
+    updateHeaderCartCount();
     const checkoutBar = document.getElementById('saffron-checkout-bar');
     if (checkoutBar) {
         checkoutBar.classList.remove('saffron-checkout-bar--hidden');
@@ -63,6 +88,7 @@ function setOrderQuantity(mealId, delta) {
     if (item.quantity === 0) {
         bitebotOrder.items = bitebotOrder.items.filter(i => i.id !== mealId);
     }
+    updateHeaderCartCount();
     renderOrderScreen();
     const overlayList = document.getElementById('cart-overlay-items-list');
     if (overlayList) {
@@ -176,15 +202,10 @@ function goToLoginScreen() {
 }
 
 function goToRegisterScreen() {
-    const loginImg = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
-    const loginImgPng = config.assets.loginFoodPng || loginImg.replace(/\.jpg$/i, '.png');
-    const fallbackImg = config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
-    const cacheBust = '?v=' + (Date.now ? Date.now() : 1);
-    templateBuilder.build('register-screen', {
-        loginLeftImage: loginImg + cacheBust,
-        loginLeftImagePng: loginImgPng,
-        loginFallbackImage: fallbackImg,
-        logoUrl: config.assets.logo
+    const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    templateBuilder.build('create-account-screen', {
+        logoUrl: config.assets.logo || '',
+        username: username
     }, 'main');
 }
 
@@ -281,7 +302,9 @@ function goToRestaurantScreen() {
         tacoImage: config.assets.tacoImage,
         butterChickenImage: config.assets.butterChickenImage
     };
-    templateBuilder.build('restaurant-screen', data, 'main');
+    templateBuilder.build('restaurant-screen', data, 'main', function () {
+        updateHeaderCartCount();
+    });
     const checkoutBar = document.getElementById('saffron-checkout-bar');
     if (checkoutBar && bitebotOrder.items.length > 0) {
         checkoutBar.classList.remove('saffron-checkout-bar--hidden');
@@ -292,6 +315,21 @@ function goToOrderScreen() {
     document.body.classList.remove('restaurant-view');
     templateBuilder.build('order-screen', {}, 'main');
     setTimeout(renderOrderScreen, 50);
+}
+
+function fillCheckoutCardAndAddress(data) {
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val != null && val !== '') el.value = String(val);
+    };
+    set('cardNumber', data.cardNumberDisplay);
+    set('expMonth', data.expMonth);
+    set('expYear', data.expYear);
+    set('billingZip', data.billingZip);
+    set('deliveryAddress', data.deliveryLine1);
+    set('deliveryCity', data.deliveryCity);
+    set('deliveryState', data.deliveryState);
+    set('deliveryZip', data.deliveryZip);
 }
 
 function goToBitebotCheckoutScreen() {
@@ -316,10 +354,10 @@ function goToBitebotCheckoutScreen() {
             billingZip: '75001'
         };
         const paymentData = hasAny ? {
-            cardNumberDisplay: (p.cardNumberLast4) ? '•••• ' + p.cardNumberLast4 : (p.cardNumber || ''),
-            expMonth: p.expMonth || '',
-            expYear: (p.expYear && p.expYear.length === 4) ? p.expYear.slice(-2) : (p.expYear || ''),
-            billingZip: p.billingZip || p.zip || ''
+            cardNumberDisplay: (p.cardNumberLast4) ? '•••• ' + p.cardNumberLast4 : (p.cardNumber || defaultPayment.cardNumberDisplay),
+            expMonth: p.expMonth || defaultPayment.expMonth,
+            expYear: (p.expYear && p.expYear.length === 4) ? p.expYear.slice(-2) : (p.expYear || defaultPayment.expYear),
+            billingZip: p.billingZip || p.zip || defaultPayment.billingZip
         } : defaultPayment;
         const addr = p.address || p.billingAddress || '12345 SESAME ST';
         const city = p.city || p.billingCity || 'LALA LAND';
@@ -355,6 +393,7 @@ function goToBitebotCheckoutScreen() {
         const data = getCheckoutData(fromProfile || fromSession);
         templateBuilder.build('bitebot-checkout-screen', data, 'main', () => {
             document.body.classList.add('bitebot-checkout-active');
+            fillCheckoutCardAndAddress(data);
         }, true);
     };
     if (typeof profileService !== 'undefined') {
@@ -409,10 +448,10 @@ function placeOrderFromCheckoutScreen() {
     };
     bitebotOrder.payment = payment;
     document.body.classList.remove('bitebot-checkout-active');
-    // Go to order tracker immediately, then submit order in background
     bitebotOrder.status = 'PLACED';
     bitebotOrder.statusScreenEnteredAt = Date.now();
-    goToOrderStatusScreen();
+    saveOrderSnapshot();
+    goToOrderPlacedScreen();
     submitOrderInBackground();
 }
 
@@ -582,30 +621,27 @@ function submitOrderInBackground() {
     };
     if (typeof ordersService === 'undefined' || !ordersService.createOrder) {
         bitebotOrder.orderError = 'Order service is not available. Please try again later.';
-        const data = getOrderStatusTemplateData();
-        const main = document.getElementById('main');
-        if (main && main.querySelector('.order-status-screen')) {
-            templateBuilder.build('order-status-screen', data, 'main');
-        }
+        goToOrderPlacedScreen();
         return;
     }
     ordersService.createOrder(order)
         .then(response => {
             const data = response.data;
             bitebotOrder.orderId = (data && data.orderId != null) ? data.orderId : (data && data.id != null) ? data.id : null;
+            saveOrderSnapshot();
             bitebotOrder.items = [];
             bitebotOrder.orderError = null;
             if (bitebotOrder.orderId) startStatusPolling();
             const main = document.getElementById('main');
-            if (main && main.querySelector('.order-status-screen')) {
-                templateBuilder.build('order-status-screen', getOrderStatusTemplateData(), 'main');
+            if (main && main.querySelector('.order-placed-screen')) {
+                templateBuilder.build('order-placed-screen', getOrderPlacedTemplateData(), 'main');
             }
         })
         .catch(() => {
             bitebotOrder.orderError = 'Order could not be placed. Please try again.';
             const main = document.getElementById('main');
-            if (main && main.querySelector('.order-status-screen')) {
-                templateBuilder.build('order-status-screen', getOrderStatusTemplateData(), 'main');
+            if (main && main.querySelector('.order-placed-screen')) {
+                templateBuilder.build('order-placed-screen', getOrderPlacedTemplateData(), 'main');
             }
         });
 }
@@ -635,6 +671,7 @@ function placeOrderAndGoToStatus() {
             const data = response.data;
             bitebotOrder.orderId = (data && data.orderId != null) ? data.orderId : (data && data.id != null) ? data.id : null;
             bitebotOrder.status = 'PLACED';
+            saveOrderSnapshot();
             bitebotOrder.items = [];
             bitebotOrder.statusScreenEnteredAt = Date.now();
             bitebotOrder.orderError = null;
@@ -670,21 +707,82 @@ function getOrderStatusTemplateData() {
     }
     const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
     const orderId = bitebotOrder.orderId != null ? String(bitebotOrder.orderId) : '—';
+    const snapshot = bitebotOrder.lastOrderSnapshot;
+    const profile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : {};
+    const firstName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.split(/\s+/)[0] || 'Guest');
+    const displayName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.includes('@') ? (username.split('@')[0].charAt(0).toUpperCase() + username.split('@')[0].slice(1).toLowerCase()) : firstName);
+    const orderName = 'Order #' + orderId;
+    let orderItems = [];
+    let subtotal = '0.00';
+    let tax = '0.00';
+    let total = '0.00';
+    let totalItems = 0;
+    if (snapshot) {
+        orderItems = snapshot.items;
+        subtotal = snapshot.subtotal;
+        tax = snapshot.tax;
+        total = snapshot.total;
+        totalItems = snapshot.totalItems;
+    } else if (bitebotOrder.items && bitebotOrder.items.length) {
+        totalItems = bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0);
+        orderItems = bitebotOrder.items.map(i => ({
+            name: i.name,
+            quantity: i.quantity,
+            price: i.price,
+            lineTotal: (i.price * i.quantity).toFixed(2)
+        }));
+        subtotal = getOrderSubtotal().toFixed(2);
+        tax = getOrderTax().toFixed(2);
+        total = getOrderTotal().toFixed(2);
+    }
     return {
         ...steps,
         logoUrl: config.assets.logo || '',
         redLogoUrl: config.assets.redLogo || config.assets.logo || '',
         username,
+        displayName: displayName || firstName,
         orderId,
+        firstName: (firstName || 'Guest').toUpperCase(),
+        orderName: orderName.toUpperCase(),
+        robotName: 'FRED',
+        estimatedMinutes: 20,
+        orderItems,
+        subtotal,
+        tax,
+        total,
+        totalItems,
         orderError: bitebotOrder.orderError || '',
         statusPlacedImage: config.assets.statusPlacedImage,
         statusEnRouteImage: config.assets.statusEnRouteImage,
         statusArrivedImage: config.assets.statusArrivedImage,
-        statusLogo: config.assets.statusLogo || config.assets.logo
+        statusLogo: config.assets.statusLogo || config.assets.logo,
+        campusMapUrl: (config.assets.campusMap || 'images/logo/campus-map.png')
     };
 }
 
 function returnFromOrderTracker() {
+    goToRestaurantScreen();
+}
+
+function getOrderPlacedTemplateData() {
+    const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    const profile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : {};
+    const firstName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.split(/\s+/)[0] || 'Guest');
+    const displayName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.includes('@') ? (username.split('@')[0].charAt(0).toUpperCase() + username.split('@')[0].slice(1).toLowerCase()) : firstName);
+    return {
+        logoUrl: config.assets.logo || '',
+        redLogoUrl: config.assets.redLogo || config.assets.logo || '',
+        displayName: displayName || firstName,
+        orderError: bitebotOrder.orderError || ''
+    };
+}
+
+function goToOrderPlacedScreen() {
+    const data = getOrderPlacedTemplateData();
+    templateBuilder.build('order-placed-screen', data, 'main');
+}
+
+function returnFromOrderPlaced() {
     goToRestaurantScreen();
 }
 
@@ -718,7 +816,13 @@ function startStatusLogoUpdater() {
 
 function goToOrderStatusScreen() {
     const data = getOrderStatusTemplateData();
-    templateBuilder.build('order-status-screen', data, 'main');
+    templateBuilder.build('order-status-screen', data, 'main', function () {
+        setTimeout(function () {
+            if (typeof campusMap !== 'undefined' && campusMap.startAnimation) {
+                campusMap.startAnimation();
+            }
+        }, 150);
+    });
 }
 
 function startStatusPolling() {
@@ -732,7 +836,11 @@ function startStatusPolling() {
                     const data = getOrderStatusTemplateData();
                     const main = document.getElementById('main');
                     if (main && main.querySelector('.order-status-screen')) {
-                        templateBuilder.build('order-status-screen', data, 'main');
+                        templateBuilder.build('order-status-screen', data, 'main', function () {
+                            setTimeout(function () {
+                                if (typeof campusMap !== 'undefined' && campusMap.startAnimation) campusMap.startAnimation();
+                            }, 150);
+                        });
                     }
                 }
             })
@@ -763,4 +871,6 @@ if (typeof window !== 'undefined') {
     window.confirmPaymentAndGoToReview = confirmPaymentAndGoToReview;
     window.placeOrderAndGoToStatus = placeOrderAndGoToStatus;
     window.returnFromOrderTracker = returnFromOrderTracker;
+    window.returnFromOrderPlaced = returnFromOrderPlaced;
+    window.goToOrderPlacedScreen = goToOrderPlacedScreen;
 }

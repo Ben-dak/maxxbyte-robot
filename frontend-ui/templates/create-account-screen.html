@@ -1,0 +1,81 @@
+<section class="screen create-account-screen">
+    <header class="bitebot-checkout-header">
+        <div class="bitebot-checkout-header-left">
+            <a href="#" class="bitebot-checkout-back" onclick="goToLoginScreen(); return false;">&lt; RETURN TO CART</a>
+        </div>
+        <div class="bitebot-checkout-header-center">
+            <img class="bitebot-checkout-logo" src="{{logoUrl}}" alt="BiteBot">
+        </div>
+        <div class="bitebot-checkout-header-right">
+            <span class="bitebot-checkout-hello">Hello {{username}}!</span>
+            <a href="#" class="bitebot-checkout-signout" onclick="userService.logout(); return false;">SIGN OUT</a>
+            <i class="fa-solid fa-user bitebot-checkout-user-icon"></i>
+        </div>
+    </header>
+
+    <div class="create-account-title-bar">
+        <h1 class="create-account-title">CREATE AN ACCOUNT</h1>
+    </div>
+
+    <div class="create-account-body">
+        <div class="create-account-columns">
+            <div class="create-account-panel create-account-profile-panel">
+                <h2 class="create-account-panel-title">PROFILE INFO <i class="fa-regular fa-user create-account-panel-icon"></i></h2>
+                <div class="create-account-fields">
+                    <div class="create-account-row-fields">
+                        <input type="text" id="register-firstName" class="create-account-input" placeholder="First Name">
+                        <input type="text" id="register-lastName" class="create-account-input" placeholder="Last Name">
+                    </div>
+                    <div class="create-account-field">
+                        <input type="text" id="register-deliveryAddress" class="create-account-input" placeholder="Delivery Address">
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="register-city" class="create-account-input" placeholder="City">
+                        <input type="text" id="register-zip" class="create-account-input create-account-input-zip" placeholder="Zip">
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="register-state" class="create-account-input" placeholder="State">
+                        <input type="text" id="register-country" class="create-account-input" placeholder="Country">
+                    </div>
+                    <div class="create-account-field">
+                        <input type="text" id="register-username" class="create-account-input" placeholder="Email Address" autocomplete="username">
+                    </div>
+                    <div class="create-account-field">
+                        <input type="password" id="register-password" class="create-account-input" placeholder="Password" autocomplete="new-password">
+                    </div>
+                    <div class="create-account-field">
+                        <input type="password" id="register-confirm" class="create-account-input" placeholder="Confirm Password" autocomplete="new-password">
+                    </div>
+                </div>
+            </div>
+
+            <div class="create-account-panel create-account-billing-panel">
+                <h2 class="create-account-panel-title">BILLING INFO <i class="fa-regular fa-credit-card create-account-panel-icon"></i></h2>
+                <div class="create-account-fields">
+                    <div class="create-account-field">
+                        <input type="text" id="register-cardNumber" class="create-account-input" placeholder="Debit or Credit Card Number" maxlength="19">
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="register-exp" class="create-account-input create-account-input-exp" placeholder="MM/YY" maxlength="5">
+                        <input type="text" id="register-cvv" class="create-account-input create-account-input-cvv" placeholder="CVV" maxlength="4">
+                    </div>
+                    <div class="create-account-field">
+                        <input type="text" id="register-billingAddress" class="create-account-input" placeholder="Billing Address">
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="register-billingCity" class="create-account-input" placeholder="Billing City">
+                        <input type="text" id="register-billingZip" class="create-account-input create-account-input-zip" placeholder="Billing Zip">
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="register-billingState" class="create-account-input" placeholder="Billing State">
+                        <input type="text" id="register-billingCountry" class="create-account-input" placeholder="Billing Country">
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="create-account-actions">
+            <button type="button" class="btn create-account-submit-btn" onclick="registerAndGoToRestaurant()">CREATE ACCOUNT</button>
+        </div>
+        <div id="register-error" class="create-account-error"></div>
+    </div>
+</section>

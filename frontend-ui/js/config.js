@@ -24,6 +24,7 @@ const config = {
         statusEnRouteImage: 'images/logo/checkmark-icon.png',
         statusArrivedImage: 'images/logo/checkmark-icon.png',
         statusLogo: 'images/logo/status-bar-logo.png',
-        redLogo: 'images/logo/red-logo.png'
+        redLogo: 'images/logo/red-logo.png',
+        campusMap: 'images/logo/campus-map.png'
     }
 }
