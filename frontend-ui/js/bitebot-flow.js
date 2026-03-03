@@ -17,7 +17,8 @@ let bitebotOrder = {
     deliveryAddress: null,
     orderId: null,
     status: 'PLACED',
-    statusScreenEnteredAt: null
+    statusScreenEnteredAt: null,
+    lastOrderSnapshot: null
 };
 let statusLogoUpdaterIntervalId = null;
 
@@ -31,6 +32,29 @@ function getOrderTax() {
 
 function getOrderTotal() {
     return getOrderSubtotal() + getOrderTax();
+}
+
+function saveOrderSnapshot() {
+    if (!bitebotOrder.items.length) return;
+    bitebotOrder.lastOrderSnapshot = {
+        items: bitebotOrder.items.map(i => ({
+            name: i.name,
+            quantity: i.quantity,
+            price: i.price,
+            lineTotal: (i.price * i.quantity).toFixed(2)
+        })),
+        subtotal: getOrderSubtotal().toFixed(2),
+        tax: getOrderTax().toFixed(2),
+        total: getOrderTotal().toFixed(2),
+        totalItems: bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0)
+    };
+}
+
+function updateHeaderCartCount() {
+    const el = document.getElementById('cart-items');
+    if (!el) return;
+    const count = bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0);
+    el.textContent = count;
 }
 
 function addToOrder(mealId) {
@@ -48,7 +72,13 @@ function addToOrder(mealId) {
             imageUrl: config.assets[menuItem.image]
         });
     }
-    goToOrderScreen();
+    updateHeaderCartCount();
+    const checkoutBar = document.getElementById('saffron-checkout-bar');
+    if (checkoutBar) {
+        checkoutBar.classList.remove('saffron-checkout-bar--hidden');
+    } else {
+        goToOrderScreen();
+    }
 }
 
 function setOrderQuantity(mealId, delta) {
@@ -58,7 +88,17 @@ function setOrderQuantity(mealId, delta) {
     if (item.quantity === 0) {
         bitebotOrder.items = bitebotOrder.items.filter(i => i.id !== mealId);
     }
+    updateHeaderCartCount();
     renderOrderScreen();
+    const overlayList = document.getElementById('cart-overlay-items-list');
+    if (overlayList) {
+        renderCartOverlay();
+        if (bitebotOrder.items.length === 0) {
+            closeCartOverlay();
+            const checkoutBar = document.getElementById('saffron-checkout-bar');
+            if (checkoutBar) checkoutBar.classList.add('saffron-checkout-bar--hidden');
+        }
+    }
 }
 
 function renderOrderScreen() {
@@ -93,6 +133,61 @@ function renderOrderScreen() {
     if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
 }
 
+function openCartOverlay() {
+    const backdrop = document.getElementById('cart-overlay-backdrop');
+    const panel = document.getElementById('cart-overlay-panel');
+    if (!backdrop || !panel) return;
+    renderCartOverlay();
+    backdrop.classList.remove('cart-overlay-backdrop--hidden');
+    panel.classList.remove('cart-overlay-panel--hidden');
+}
+
+function closeCartOverlay() {
+    const backdrop = document.getElementById('cart-overlay-backdrop');
+    const panel = document.getElementById('cart-overlay-panel');
+    if (backdrop) backdrop.classList.add('cart-overlay-backdrop--hidden');
+    if (panel) panel.classList.add('cart-overlay-panel--hidden');
+}
+
+function renderCartOverlay() {
+    const listEl = document.getElementById('cart-overlay-items-list');
+    if (!listEl) return;
+    listEl.innerHTML = '';
+    bitebotOrder.items.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'cart-overlay-item-row';
+        div.innerHTML = `
+            <img src="${item.imageUrl}" alt="${item.name}" class="cart-overlay-item-thumb">
+            <div class="cart-overlay-item-info">
+                <p class="cart-overlay-item-name">${item.name}</p>
+                <p class="cart-overlay-item-price">$${item.price.toFixed(2)}</p>
+            </div>
+            <div class="cart-overlay-item-qty">
+                <button type="button" onclick="setOrderQuantity('${item.id}', -1)">−</button>
+                <span class="cart-overlay-qty-value">${item.quantity}</span>
+                <button type="button" onclick="setOrderQuantity('${item.id}', 1)">+</button>
+            </div>
+        `;
+        listEl.appendChild(div);
+    });
+    const subtotal = getOrderSubtotal();
+    const tax = getOrderTax();
+    const total = getOrderTotal();
+    const subtotalEl = document.getElementById('cart-overlay-subtotal');
+    const taxEl = document.getElementById('cart-overlay-tax');
+    const totalEl = document.getElementById('cart-overlay-total');
+    const checkoutBtn = document.getElementById('cart-overlay-checkout-btn');
+    if (subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
+    if (taxEl) taxEl.textContent = '$' + tax.toFixed(2);
+    if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
+    if (checkoutBtn) checkoutBtn.textContent = 'CHECK OUT - $' + total.toFixed(2);
+}
+
+function cartOverlayGoToCheckout() {
+    closeCartOverlay();
+    goToBitebotCheckoutScreen();
+}
+
 function goToLoginScreen() {
     const loginImg = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
     const loginImgPng = config.assets.loginFoodPng || loginImg.replace(/\.jpg$/i, '.png');
@@ -107,15 +202,10 @@ function goToLoginScreen() {
 }
 
 function goToRegisterScreen() {
-    const loginImg = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
-    const loginImgPng = config.assets.loginFoodPng || loginImg.replace(/\.jpg$/i, '.png');
-    const fallbackImg = config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
-    const cacheBust = '?v=' + (Date.now ? Date.now() : 1);
-    templateBuilder.build('register-screen', {
-        loginLeftImage: loginImg + cacheBust,
-        loginLeftImagePng: loginImgPng,
-        loginFallbackImage: fallbackImg,
-        logoUrl: config.assets.logo
+    const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    templateBuilder.build('create-account-screen', {
+        logoUrl: config.assets.logo || '',
+        username: username
     }, 'main');
 }
 
@@ -212,13 +302,157 @@ function goToRestaurantScreen() {
         tacoImage: config.assets.tacoImage,
         butterChickenImage: config.assets.butterChickenImage
     };
-    templateBuilder.build('restaurant-screen', data, 'main');
+    templateBuilder.build('restaurant-screen', data, 'main', function () {
+        updateHeaderCartCount();
+    });
+    const checkoutBar = document.getElementById('saffron-checkout-bar');
+    if (checkoutBar && bitebotOrder.items.length > 0) {
+        checkoutBar.classList.remove('saffron-checkout-bar--hidden');
+    }
 }
 
 function goToOrderScreen() {
     document.body.classList.remove('restaurant-view');
     templateBuilder.build('order-screen', {}, 'main');
     setTimeout(renderOrderScreen, 50);
+}
+
+function fillCheckoutCardAndAddress(data) {
+    const set = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && val != null && val !== '') el.value = String(val);
+    };
+    set('cardNumber', data.cardNumberDisplay);
+    set('expMonth', data.expMonth);
+    set('expYear', data.expYear);
+    set('billingZip', data.billingZip);
+    set('deliveryAddress', data.deliveryLine1);
+    set('deliveryCity', data.deliveryCity);
+    set('deliveryState', data.deliveryState);
+    set('deliveryZip', data.deliveryZip);
+}
+
+function goToBitebotCheckoutScreen() {
+    if (!bitebotOrder.items.length) {
+        const errEl = document.getElementById('errors');
+        if (errEl) errEl.innerHTML = '<div class="alert alert-warning">Add at least one item to your order.</div>';
+        return;
+    }
+    const subtotal = getOrderSubtotal();
+    const tax = getOrderTax();
+    const total = getOrderTotal();
+    const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    const itemCount = bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0);
+    const itemCountText = itemCount + ' ' + (itemCount === 1 ? 'Item' : 'Items');
+    const getCheckoutData = (profile) => {
+        const p = profile || {};
+        const hasAny = p.nameOnCard || p.billingAddress || p.address || p.email || p.cardNumberLast4;
+        const defaultPayment = {
+            cardNumberDisplay: '4111 1111 1111 1111',
+            expMonth: '12',
+            expYear: '28',
+            billingZip: '75001'
+        };
+        const paymentData = hasAny ? {
+            cardNumberDisplay: (p.cardNumberLast4) ? '•••• ' + p.cardNumberLast4 : (p.cardNumber || defaultPayment.cardNumberDisplay),
+            expMonth: p.expMonth || defaultPayment.expMonth,
+            expYear: (p.expYear && p.expYear.length === 4) ? p.expYear.slice(-2) : (p.expYear || defaultPayment.expYear),
+            billingZip: p.billingZip || p.zip || defaultPayment.billingZip
+        } : defaultPayment;
+        const addr = p.address || p.billingAddress || '12345 SESAME ST';
+        const city = p.city || p.billingCity || 'LALA LAND';
+        const state = p.state || p.billingState || 'TX';
+        const zip = p.zip || p.billingZip || '90210';
+        bitebotOrder.deliveryAddress = { address: addr, city, state, zip };
+        const orderItems = bitebotOrder.items.map(i => ({
+            name: i.name,
+            quantity: i.quantity,
+            price: i.price.toFixed(2),
+            lineTotal: (i.price * i.quantity).toFixed(2)
+        }));
+        return {
+            logoUrl: config.assets.logo || '',
+            username,
+            itemCount,
+            itemCountText,
+            orderItems,
+            subtotal: subtotal.toFixed(2),
+            tax: tax.toFixed(2),
+            total: total.toFixed(2),
+            deliveryLine1: addr,
+            deliveryLine2: city + ', ' + state + ' ' + zip,
+            deliveryCity: city,
+            deliveryState: state,
+            deliveryZip: zip,
+            ...paymentData
+        };
+    };
+    const loadThenShow = () => {
+        const fromProfile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : null;
+        const fromSession = bitebotOrder.payment;
+        const data = getCheckoutData(fromProfile || fromSession);
+        templateBuilder.build('bitebot-checkout-screen', data, 'main', () => {
+            document.body.classList.add('bitebot-checkout-active');
+            fillCheckoutCardAndAddress(data);
+        }, true);
+    };
+    if (typeof profileService !== 'undefined') {
+        profileService.loadProfileForFlow().then(loadThenShow).catch(loadThenShow);
+    } else {
+        loadThenShow();
+    }
+}
+
+function toggleOrderItemsExpand() {
+    const dropdown = document.getElementById('order-items-dropdown');
+    const expander = document.querySelector('.bitebot-checkout-order-expander');
+    if (!dropdown || !expander) return;
+    const isHidden = dropdown.hidden;
+    dropdown.hidden = !isHidden;
+    expander.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+    expander.classList.toggle('bitebot-checkout-order-expander--open', isHidden);
+}
+
+function returnToCartFromCheckout() {
+    document.body.classList.remove('bitebot-checkout-active');
+    goToRestaurantScreen();
+    setTimeout(openCartOverlay, 100);
+}
+
+function editDeliveryFromCheckout() {
+    returnToCartFromCheckout();
+}
+
+function placeOrderFromCheckoutScreen() {
+    bitebotOrder.orderError = null;
+    const cardNumber = document.getElementById('cardNumber')?.value?.trim() || '';
+    const getVal = id => document.getElementById(id)?.value?.trim() || '';
+    bitebotOrder.deliveryAddress = {
+        address: getVal('deliveryAddress'),
+        city: getVal('deliveryCity'),
+        state: getVal('deliveryState'),
+        zip: getVal('deliveryZip')
+    };
+    const delivery = bitebotOrder.deliveryAddress;
+    const payment = {
+        nameOnCard: '',
+        cardNumber: cardNumber,
+        cardNumberLast4: cardNumber.length >= 4 ? cardNumber.slice(-4) : '',
+        expMonth: document.getElementById('expMonth')?.value?.trim() || '',
+        expYear: document.getElementById('expYear')?.value?.trim() || '',
+        billingZip: document.getElementById('billingZip')?.value?.trim() || '',
+        billingAddress: delivery.address || '',
+        billingCity: delivery.city || '',
+        billingState: delivery.state || '',
+        billingZip: delivery.zip || ''
+    };
+    bitebotOrder.payment = payment;
+    document.body.classList.remove('bitebot-checkout-active');
+    bitebotOrder.status = 'PLACED';
+    bitebotOrder.statusScreenEnteredAt = Date.now();
+    saveOrderSnapshot();
+    goToOrderPlacedScreen();
+    submitOrderInBackground();
 }
 
 function goToPaymentScreen() {
@@ -372,6 +606,46 @@ function renderReviewScreen() {
     if (el('review-delivery-address')) el('review-delivery-address').textContent = deliveryStr || '—';
 }
 
+function submitOrderInBackground() {
+    const total = getOrderTotal();
+    const p = bitebotOrder.payment || {};
+    const delivery = bitebotOrder.deliveryAddress;
+    const profile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : {};
+    const order = {
+        deliveryAddress: (delivery && delivery.address) || profile.address || p.billingAddress || '',
+        deliveryCity: (delivery && delivery.city) || profile.city || p.billingCity || '',
+        deliveryState: (delivery && delivery.state) || profile.state || p.billingState || '',
+        deliveryZip: (delivery && delivery.zip) || profile.zip || p.billingZip || '',
+        totalAmount: total,
+        status: 'PLACED'
+    };
+    if (typeof ordersService === 'undefined' || !ordersService.createOrder) {
+        bitebotOrder.orderError = 'Order service is not available. Please try again later.';
+        goToOrderPlacedScreen();
+        return;
+    }
+    ordersService.createOrder(order)
+        .then(response => {
+            const data = response.data;
+            bitebotOrder.orderId = (data && data.orderId != null) ? data.orderId : (data && data.id != null) ? data.id : null;
+            saveOrderSnapshot();
+            bitebotOrder.items = [];
+            bitebotOrder.orderError = null;
+            if (bitebotOrder.orderId) startStatusPolling();
+            const main = document.getElementById('main');
+            if (main && main.querySelector('.order-placed-screen')) {
+                templateBuilder.build('order-placed-screen', getOrderPlacedTemplateData(), 'main');
+            }
+        })
+        .catch(() => {
+            bitebotOrder.orderError = 'Order could not be placed. Please try again.';
+            const main = document.getElementById('main');
+            if (main && main.querySelector('.order-placed-screen')) {
+                templateBuilder.build('order-placed-screen', getOrderPlacedTemplateData(), 'main');
+            }
+        });
+}
+
 function placeOrderAndGoToStatus() {
     const total = getOrderTotal();
     const p = bitebotOrder.payment || {};
@@ -385,13 +659,22 @@ function placeOrderAndGoToStatus() {
         totalAmount: total,
         status: 'PLACED'
     };
+    if (typeof ordersService === 'undefined' || !ordersService.createOrder) {
+        bitebotOrder.orderError = 'Order service is not available. Please try again later.';
+        bitebotOrder.status = 'PLACED';
+        bitebotOrder.statusScreenEnteredAt = Date.now();
+        goToOrderStatusScreen();
+        return;
+    }
     ordersService.createOrder(order)
         .then(response => {
             const data = response.data;
             bitebotOrder.orderId = (data && data.orderId != null) ? data.orderId : (data && data.id != null) ? data.id : null;
             bitebotOrder.status = 'PLACED';
+            saveOrderSnapshot();
             bitebotOrder.items = [];
             bitebotOrder.statusScreenEnteredAt = Date.now();
+            bitebotOrder.orderError = null;
             goToOrderStatusScreen();
             if (bitebotOrder.orderId) startStatusPolling();
         })
@@ -441,13 +724,85 @@ function getOrderStatusTemplateData() {
         steps.connector1Class = 'done';
         steps.connector2Class = 'done';
     }
+    const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    const orderId = bitebotOrder.orderId != null ? String(bitebotOrder.orderId) : '—';
+    const snapshot = bitebotOrder.lastOrderSnapshot;
+    const profile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : {};
+    const firstName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.split(/\s+/)[0] || 'Guest');
+    const displayName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.includes('@') ? (username.split('@')[0].charAt(0).toUpperCase() + username.split('@')[0].slice(1).toLowerCase()) : firstName);
+    const orderName = 'Order #' + orderId;
+    let orderItems = [];
+    let subtotal = '0.00';
+    let tax = '0.00';
+    let total = '0.00';
+    let totalItems = 0;
+    if (snapshot) {
+        orderItems = snapshot.items;
+        subtotal = snapshot.subtotal;
+        tax = snapshot.tax;
+        total = snapshot.total;
+        totalItems = snapshot.totalItems;
+    } else if (bitebotOrder.items && bitebotOrder.items.length) {
+        totalItems = bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0);
+        orderItems = bitebotOrder.items.map(i => ({
+            name: i.name,
+            quantity: i.quantity,
+            price: i.price,
+            lineTotal: (i.price * i.quantity).toFixed(2)
+        }));
+        subtotal = getOrderSubtotal().toFixed(2);
+        tax = getOrderTax().toFixed(2);
+        total = getOrderTotal().toFixed(2);
+    }
     return {
         ...steps,
+        logoUrl: config.assets.logo || '',
+        redLogoUrl: config.assets.redLogo || config.assets.logo || '',
+        username,
+        displayName: displayName || firstName,
+        orderId,
+        firstName: (firstName || 'Guest').toUpperCase(),
+        orderName: orderName.toUpperCase(),
+        robotName: 'FRED',
+        estimatedMinutes: 20,
+        orderItems,
+        subtotal,
+        tax,
+        total,
+        totalItems,
+        orderError: bitebotOrder.orderError || '',
         statusPlacedImage: config.assets.statusPlacedImage,
         statusEnRouteImage: config.assets.statusEnRouteImage,
         statusArrivedImage: config.assets.statusArrivedImage,
-        statusLogo: config.assets.statusLogo || config.assets.logo
+        statusLogo: config.assets.statusLogo || config.assets.logo,
+        campusMapUrl: (config.assets.campusMap || 'images/logo/campus-map.png')
     };
+}
+
+function returnFromOrderTracker() {
+    goToRestaurantScreen();
+}
+
+function getOrderPlacedTemplateData() {
+    const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    const profile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : {};
+    const firstName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.split(/\s+/)[0] || 'Guest');
+    const displayName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.includes('@') ? (username.split('@')[0].charAt(0).toUpperCase() + username.split('@')[0].slice(1).toLowerCase()) : firstName);
+    return {
+        logoUrl: config.assets.logo || '',
+        redLogoUrl: config.assets.redLogo || config.assets.logo || '',
+        displayName: displayName || firstName,
+        orderError: bitebotOrder.orderError || ''
+    };
+}
+
+function goToOrderPlacedScreen() {
+    const data = getOrderPlacedTemplateData();
+    templateBuilder.build('order-placed-screen', data, 'main');
+}
+
+function returnFromOrderPlaced() {
+    goToRestaurantScreen();
 }
 
 function updateStatusLogoPosition() {
@@ -596,7 +951,18 @@ if (typeof window !== 'undefined') {
     window.setOrderQuantity = setOrderQuantity;
     window.goToRestaurantScreen = goToRestaurantScreen;
     window.goToOrderScreen = goToOrderScreen;
+    window.openCartOverlay = openCartOverlay;
+    window.closeCartOverlay = closeCartOverlay;
+    window.cartOverlayGoToCheckout = cartOverlayGoToCheckout;
+    window.goToBitebotCheckoutScreen = goToBitebotCheckoutScreen;
+    window.toggleOrderItemsExpand = toggleOrderItemsExpand;
+    window.returnToCartFromCheckout = returnToCartFromCheckout;
+    window.editDeliveryFromCheckout = editDeliveryFromCheckout;
+    window.placeOrderFromCheckoutScreen = placeOrderFromCheckoutScreen;
     window.goToPaymentScreen = goToPaymentScreen;
     window.confirmPaymentAndGoToReview = confirmPaymentAndGoToReview;
     window.placeOrderAndGoToStatus = placeOrderAndGoToStatus;
+    window.returnFromOrderTracker = returnFromOrderTracker;
+    window.returnFromOrderPlaced = returnFromOrderPlaced;
+    window.goToOrderPlacedScreen = goToOrderPlacedScreen;
 }

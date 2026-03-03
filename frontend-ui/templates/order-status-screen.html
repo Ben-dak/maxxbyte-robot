@@ -1,22 +1,79 @@
-<section class="screen order-status-screen">
-    <h2>Order Status</h2>
-    <div class="status-unified-bar">
-        <div class="status-bar-track"></div>
-        <div class="status-logo-runner">
-            <img src="{{statusLogo}}" alt="" class="status-moving-logo">
+<section class="screen order-status-screen order-tracker-screen">
+    <header class="bitebot-checkout-header order-tracker-header">
+        <div class="bitebot-checkout-header-left">
+            <a href="#" class="bitebot-checkout-back" onclick="returnFromOrderTracker(); return false;">&lt; RETURN TO CART</a>
         </div>
-        <div class="status-step status-step-1 {{step1Class}}">
-            <div class="status-icon"><img src="{{statusPlacedImage}}" alt="Order placed"></div>
-            <span>Order Placed</span>
+        <div class="bitebot-checkout-header-center">
+            <img class="bitebot-checkout-logo" src="{{logoUrl}}" alt="BiteBot">
         </div>
-        <div class="status-step status-step-2 {{step2Class}}">
-            <div class="status-icon"><img src="{{statusEnRouteImage}}" alt="Order en route"></div>
-            <span>Order En Route</span>
+        <div class="bitebot-checkout-header-right">
+            <span class="bitebot-checkout-hello">Hello {{displayName}}!</span>
+            <a href="#" class="bitebot-checkout-signout" onclick="userService.logout(); return false;">SIGN OUT</a>
+            <i class="fa-solid fa-user bitebot-checkout-user-icon"></i>
         </div>
-        <div class="status-step status-step-3 {{step3Class}}">
-            <div class="status-icon"><img src="{{statusArrivedImage}}" alt="Order arrived"></div>
-            <span>Order Arrived</span>
+    </header>
+
+    <div class="order-tracker-title-banner">
+        <h1 class="order-tracker-title">ORDER TRACKER</h1>
+    </div>
+
+    <div class="order-tracker-body">
+        {{#orderError}}
+        <div class="order-tracker-error" id="order-tracker-error">{{orderError}}</div>
+        {{/orderError}}
+
+        <div class="order-tracker-layout">
+            <div class="order-tracker-left">
+                <div class="order-tracker-confirmation-box">
+                    <div class="order-tracker-box-header">{{firstName}} &middot; {{orderName}}</div>
+                    <div class="order-tracker-box-inner">
+                        <img src="{{redLogoUrl}}" alt="BiteBot" class="order-tracker-robot-icon">
+                        <div class="order-tracker-assignment">
+                            <p class="order-tracker-assigned">BITEBOT ASSIGNED: {{robotName}}</p>
+                            <p class="order-tracker-estimated">Estimated Time: {{estimatedMinutes}} minutes</p>
+                        </div>
+                    </div>
+                    <div class="order-tracker-items-section">
+                        <p class="order-tracker-items-heading">Items</p>
+                        {{#orderItems}}
+                        <div class="order-tracker-item-line">
+                            <span class="order-tracker-item-desc">{{quantity}} x {{name}}</span>
+                            <span class="order-tracker-item-price">${{lineTotal}}</span>
+                        </div>
+                        {{/orderItems}}
+                    </div>
+                    <div class="order-tracker-summary-divider"></div>
+                    <div class="order-tracker-summary">
+                        <p class="order-tracker-total-items">{{totalItems}} Total Items</p>
+                        <div class="order-tracker-summary-rows">
+                            <div class="order-tracker-summary-row"><span>Subtotal</span><span>${{subtotal}}</span></div>
+                            <div class="order-tracker-summary-row"><span>Tax</span><span>${{tax}}</span></div>
+                            <div class="order-tracker-summary-row order-tracker-summary-total"><span>Total</span><span>${{total}}</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="order-tracker-progress">
+                    <div class="order-tracker-step {{step1Class}}"><span>ORDER PLACED</span></div>
+                    <div class="order-tracker-step {{step2Class}}"><span>IN TRANSIT</span></div>
+                    <div class="order-tracker-step {{step3Class}}"><span>DELIVERED</span></div>
+                </div>
+            </div>
+
+            <div class="order-tracker-right">
+                <div class="order-tracker-map-card">
+                    <div class="order-tracker-map-header">Delivery Route</div>
+                    <div class="order-tracker-map-frame">
+                        <img src="{{campusMapUrl}}" alt="Campus delivery map" class="order-tracker-map-image">
+                        <div class="order-tracker-map-robot" aria-hidden="true">🤖</div>
+                    </div>
+                </div>
+            </div>
         </div>
+
+        <footer class="order-tracker-footer">
+            <img src="{{logoUrl}}" alt="BiteBot" class="order-tracker-footer-logo">
+        </footer>
     </div>
     <div class="delivery-map-container">
         <h4>Delivery Tracking</h4>
