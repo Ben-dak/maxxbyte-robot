@@ -19,6 +19,7 @@ CREATE TABLE users (
     username VARCHAR(50) NOT NULL,
     hashed_password VARCHAR(255) NOT NULL,
     role VARCHAR(50) NOT NULL,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
     PRIMARY KEY (user_id)
 );
 
@@ -41,6 +42,7 @@ CREATE TABLE profiles (
     billing_state VARCHAR(50),
     billing_zip VARCHAR(20),
     billing_country VARCHAR(50),
+    delivery_country VARCHAR(50),
     PRIMARY KEY (user_id),
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );

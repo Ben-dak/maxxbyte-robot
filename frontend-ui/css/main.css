@@ -2639,3 +2639,24 @@ body:has(.bitebot-checkout-screen) {
     background: #a6141d;
     color: #fff;
 }
+
+/* Delivery Tracking Map */
+.delivery-map-container {
+    margin: 2rem auto;
+    max-width: 600px;
+    background: #fff;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.delivery-map-container h4 {
+    color: #333;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+}
+#delivery-map {
+    height: 300px;
+    width: 100%;
+    border-radius: 8px;
+    z-index: 1;
+}

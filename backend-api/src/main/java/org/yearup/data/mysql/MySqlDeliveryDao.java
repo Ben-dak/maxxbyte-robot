@@ -7,6 +7,8 @@ import org.yearup.models.Delivery;
 import javax.sql.DataSource;
 import java.sql.*;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class MySqlDeliveryDao extends MySqlDaoBase implements DeliveryDao {
@@ -107,6 +109,54 @@ public class MySqlDeliveryDao extends MySqlDaoBase implements DeliveryDao {
         try (Connection connection = getConnection();
              PreparedStatement statement = connection.prepareStatement(sql)) {
             statement.setInt(1, robotId);
+            statement.setInt(2, deliveryId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<Delivery> getByStatus(String status) {
+        List<Delivery> deliveries = new ArrayList<>();
+        String sql = "SELECT * FROM deliveries WHERE status = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setString(1, status);
+            try (ResultSet row = statement.executeQuery()) {
+                while (row.next()) {
+                    deliveries.add(mapRow(row));
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return deliveries;
+    }
+
+    @Override
+    public void updateStartedAt(int deliveryId, LocalDateTime startedAt) {
+        String sql = "UPDATE deliveries SET started_at = ? WHERE delivery_id = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setTimestamp(1, toTimestamp(startedAt));
+            statement.setInt(2, deliveryId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void updateCompletedAt(int deliveryId, LocalDateTime completedAt) {
+        String sql = "UPDATE deliveries SET completed_at = ? WHERE delivery_id = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setTimestamp(1, toTimestamp(completedAt));
             statement.setInt(2, deliveryId);
             statement.executeUpdate();
         } catch (SQLException e) {

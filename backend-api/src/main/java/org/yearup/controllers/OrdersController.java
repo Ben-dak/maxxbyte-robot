@@ -74,40 +74,57 @@ public class OrdersController {
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER','CUSTOMER')")
     public Order createOrder(@RequestBody Order order, Principal principal) {
-        if (!isStaffOrAdmin()) {
-            User user = userDao.getByUserName(principal.getName());
-            if (user == null) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
+        try {
+            if (!isStaffOrAdmin()) {
+                User user = userDao.getByUserName(principal.getName());
+                if (user == null) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found.");
+                }
+                order.setUserId(user.getId());
             }
-            order.setUserId(user.getId());
-        }
 
-        if (isBlank(order.getDeliveryAddress()) || isBlank(order.getDeliveryCity())
-                || isBlank(order.getDeliveryState()) || isBlank(order.getDeliveryZip())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery address is required.");
-        }
+            if (isBlank(order.getDeliveryAddress()) || isBlank(order.getDeliveryCity())
+                    || isBlank(order.getDeliveryState()) || isBlank(order.getDeliveryZip())) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery address is required.");
+            }
 
-        if (order.getStatus() == null || order.getStatus().isBlank()) {
-            order.setStatus("PLACED");
-        }
-        if (order.getCreatedAt() == null) {
-            order.setCreatedAt(LocalDateTime.now());
-        }
+            if (order.getStatus() == null || order.getStatus().isBlank()) {
+                order.setStatus("PLACED");
+            }
+            if (order.getCreatedAt() == null) {
+                order.setCreatedAt(LocalDateTime.now());
+            }
+            if (order.getTotalAmount() == null) {
+                order.setTotalAmount(java.math.BigDecimal.ZERO);
+            }
 
-        Order created = orderDao.create(order);
-        if (created == null) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Order could not be created.");
+            Order created = orderDao.create(order);
+            if (created == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Order could not be created.");
+            }
+
+            try {
+                Delivery delivery = new Delivery();
+                delivery.setOrderId(created.getOrderId());
+                delivery.setStatus("PENDING_ASSIGNMENT");
+                delivery.setPickupLocation("Main Kitchen");
+                delivery.setDropoffLocation(created.getDeliveryAddress());
+                Delivery createdDelivery = deliveryDao.create(delivery);
+                if (createdDelivery != null) {
+                    loggingService.logDeliveryEvent(createdDelivery, "Delivery record created.");
+                }
+            } catch (Exception e) {
+                System.err.println("Warning: Delivery record creation failed for order " + created.getOrderId() + ": " + e.getMessage());
+            }
+
+            return created;
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            System.err.println("Order creation error: " + e.getMessage());
+            e.printStackTrace();
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Order creation failed: " + e.getMessage());
         }
-
-        Delivery delivery = new Delivery();
-        delivery.setOrderId(created.getOrderId());
-        delivery.setStatus("PENDING_ASSIGNMENT");
-        delivery.setPickupLocation("Main Kitchen");
-        delivery.setDropoffLocation(created.getDeliveryAddress());
-        Delivery createdDelivery = deliveryDao.create(delivery);
-        loggingService.logDeliveryEvent(createdDelivery, "Delivery record created.");
-
-        return created;
     }
 
     @PutMapping("/{orderId}")

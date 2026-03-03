@@ -678,11 +678,30 @@ function placeOrderAndGoToStatus() {
             goToOrderStatusScreen();
             if (bitebotOrder.orderId) startStatusPolling();
         })
-        .catch(() => {
-            bitebotOrder.orderError = 'Order could not be placed. Please try again.';
-            bitebotOrder.status = 'PLACED';
-            bitebotOrder.statusScreenEnteredAt = Date.now();
-            goToOrderStatusScreen();
+        .catch((error) => {
+            const errEl = document.getElementById('errors');
+            let errorMsg = 'Order could not be placed. Please try again.';
+            if (error.response) {
+                const status = error.response.status;
+                const data = error.response.data;
+                const serverMsg = data?.message || data?.error || (typeof data === 'string' ? data : '');
+                if (status === 400) {
+                    errorMsg = serverMsg || 'Invalid order data. Please check your delivery address.';
+                } else if (status === 401 || status === 403) {
+                    errorMsg = 'Session expired. Please sign in again.';
+                } else if (status === 404) {
+                    errorMsg = serverMsg || 'User not found. Please sign in again.';
+                } else if (serverMsg) {
+                    errorMsg = serverMsg;
+                }
+                console.error('Order creation failed:', status, data);
+            } else if (error.request) {
+                errorMsg = 'Unable to reach server. Please check your connection.';
+                console.error('Order creation failed: No response from server');
+            } else {
+                console.error('Order creation failed:', error.message);
+            }
+            if (errEl) errEl.innerHTML = '<div class="alert alert-danger">' + errorMsg + '</div>';
         });
 }
 
@@ -811,17 +830,91 @@ function startStatusLogoUpdater() {
         bitebotOrder.statusScreenEnteredAt = Date.now();
     }
     updateStatusLogoPosition();
-    statusLogoUpdaterIntervalId = setInterval(updateStatusLogoPosition, 500);
+    statusLogoUpdaterIntervalId = setInterval(() => {
+        updateStatusLogoPosition();
+        updateDeliveryMapRobot();
+    }, 500);
+}
+
+let deliveryMap = null;
+let deliveryMapRobotMarker = null;
+const PICKUP_COORDS = [32.7767, -96.7970];
+const DELIVERY_COORDS = [32.7850, -96.7830];
+
+function initDeliveryMap() {
+    const mapEl = document.getElementById('delivery-map');
+    if (!mapEl || typeof L === 'undefined') return;
+    
+    if (deliveryMap) {
+        deliveryMap.remove();
+        deliveryMap = null;
+    }
+    
+    const midLat = (PICKUP_COORDS[0] + DELIVERY_COORDS[0]) / 2;
+    const midLng = (PICKUP_COORDS[1] + DELIVERY_COORDS[1]) / 2;
+    
+    deliveryMap = L.map('delivery-map').setView([midLat, midLng], 14);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(deliveryMap);
+    
+    const kitchenIcon = L.divIcon({
+        html: '<i class="fa-solid fa-utensils" style="color: #c62828; font-size: 24px;"></i>',
+        className: 'delivery-map-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24]
+    });
+    L.marker(PICKUP_COORDS, { icon: kitchenIcon })
+        .addTo(deliveryMap)
+        .bindPopup('Pickup: Main Kitchen');
+    
+    const homeIcon = L.divIcon({
+        html: '<i class="fa-solid fa-house" style="color: #2e7d32; font-size: 24px;"></i>',
+        className: 'delivery-map-icon',
+        iconSize: [24, 24],
+        iconAnchor: [12, 24]
+    });
+    L.marker(DELIVERY_COORDS, { icon: homeIcon })
+        .addTo(deliveryMap)
+        .bindPopup('Delivery Location');
+    
+    L.polyline([PICKUP_COORDS, DELIVERY_COORDS], {
+        color: '#1976d2',
+        weight: 3,
+        dashArray: '10, 10'
+    }).addTo(deliveryMap);
+    
+    const robotIcon = L.divIcon({
+        html: '<i class="fa-solid fa-robot" style="color: #ff5722; font-size: 28px;"></i>',
+        className: 'delivery-map-icon',
+        iconSize: [28, 28],
+        iconAnchor: [14, 14]
+    });
+    deliveryMapRobotMarker = L.marker(PICKUP_COORDS, { icon: robotIcon })
+        .addTo(deliveryMap)
+        .bindPopup('BiteBot Delivery Robot');
+    
+    updateDeliveryMapRobot();
+}
+
+function updateDeliveryMapRobot() {
+    if (!deliveryMapRobotMarker || bitebotOrder.statusScreenEnteredAt == null) return;
+    
+    const elapsed = Date.now() - bitebotOrder.statusScreenEnteredAt;
+    let progress = Math.min(elapsed / STATUS_TOTAL_MS, 1);
+    
+    const lat = PICKUP_COORDS[0] + (DELIVERY_COORDS[0] - PICKUP_COORDS[0]) * progress;
+    const lng = PICKUP_COORDS[1] + (DELIVERY_COORDS[1] - PICKUP_COORDS[1]) * progress;
+    
+    deliveryMapRobotMarker.setLatLng([lat, lng]);
 }
 
 function goToOrderStatusScreen() {
     const data = getOrderStatusTemplateData();
-    templateBuilder.build('order-status-screen', data, 'main', function () {
-        setTimeout(function () {
-            if (typeof campusMap !== 'undefined' && campusMap.startAnimation) {
-                campusMap.startAnimation();
-            }
-        }, 150);
+    templateBuilder.build('order-status-screen', data, 'main', () => {
+        startStatusLogoUpdater();
+        setTimeout(initDeliveryMap, 100);
     });
 }
 
@@ -836,10 +929,9 @@ function startStatusPolling() {
                     const data = getOrderStatusTemplateData();
                     const main = document.getElementById('main');
                     if (main && main.querySelector('.order-status-screen')) {
-                        templateBuilder.build('order-status-screen', data, 'main', function () {
-                            setTimeout(function () {
-                                if (typeof campusMap !== 'undefined' && campusMap.startAnimation) campusMap.startAnimation();
-                            }, 150);
+                        templateBuilder.build('order-status-screen', data, 'main', () => {
+                            startStatusLogoUpdater();
+                            setTimeout(initDeliveryMap, 100);
                         });
                     }
                 }
