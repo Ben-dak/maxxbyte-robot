@@ -43,8 +43,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
      * Configure paths and requests that should be ignored by Spring Security
      * @param web
      */
+    @Override
     public void configure(WebSecurity web) {
-        web.ignoring().antMatchers(HttpMethod.OPTIONS, "/**");
+        web.ignoring()
+                .antMatchers(HttpMethod.OPTIONS, "/**")
+                .antMatchers("/", "/index.html", "/css/**", "/js/**", "/images/**", "/templates/**", "/*.ico");
     }
 
     /**

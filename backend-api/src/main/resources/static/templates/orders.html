@@ -1,0 +1,33 @@
+<section class="orders-section">
+    <div class="orders-visual">
+        <img src="{{orderCardImage}}" alt="Order details">
+    </div>
+    <div class="orders-content">
+        <h2>Your Orders</h2>
+    {{#hasOrders}}
+    <table class="table table-striped mt-3">
+        <thead>
+        <tr>
+            <th>Order #</th>
+            <th>Status</th>
+            <th>Created</th>
+            <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {{#orders}}
+        <tr>
+            <td><a href="#" onclick="loadOrderDetail({{orderId}});return false;">{{orderId}}</a></td>
+            <td>{{status}}</td>
+            <td>{{createdAt}}</td>
+            <td>${{totalAmount}}</td>
+        </tr>
+        {{/orders}}
+        </tbody>
+    </table>
+    {{/hasOrders}}
+    {{^hasOrders}}
+    <p class="text-muted mt-3">No orders found.</p>
+    {{/hasOrders}}
+    </div>
+</section>

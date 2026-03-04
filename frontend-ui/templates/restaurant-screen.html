@@ -31,4 +31,27 @@
             </div>
         </div>
     </div>
+    <div id="saffron-checkout-bar" class="saffron-checkout-bar saffron-checkout-bar--hidden">
+        <button type="button" id="saffron-checkout-btn" class="btn saffron-checkout-btn" onclick="openCartOverlay()">Checkout</button>
+    </div>
+    <div id="cart-overlay-backdrop" class="cart-overlay-backdrop cart-overlay-backdrop--hidden" onclick="closeCartOverlay()"></div>
+    <div id="cart-overlay-panel" class="cart-overlay-panel cart-overlay-panel--hidden">
+        <div class="cart-overlay-title-bar">
+            <h2 class="cart-overlay-title">CART</h2>
+        </div>
+        <div class="cart-overlay-subtotal-row">
+            <div class="cart-overlay-subtotal-label">SUBTOTAL <span class="cart-overlay-subtotal-note">(taxes/fees not included)</span></div>
+            <span id="cart-overlay-subtotal" class="cart-overlay-subtotal-value">$0.00</span>
+        </div>
+        <div id="cart-overlay-items-list" class="cart-overlay-items-list"></div>
+        <div class="cart-overlay-summary">
+            <div class="cart-overlay-row"><span>Delivery Fee</span><span>FREE</span></div>
+            <div class="cart-overlay-row"><span>Tax</span><span id="cart-overlay-tax">$0.00</span></div>
+            <div class="cart-overlay-row cart-overlay-total-row"><span>TOTAL</span><span id="cart-overlay-total">$0.00</span></div>
+        </div>
+        <div class="cart-overlay-actions">
+            <button type="button" class="btn cart-overlay-keep-shopping" onclick="closeCartOverlay()">KEEP SHOPPING</button>
+            <button type="button" id="cart-overlay-checkout-btn" class="btn cart-overlay-checkout" onclick="cartOverlayGoToCheckout()">CHECK OUT - $0.00</button>
+        </div>
+    </div>
 </section>

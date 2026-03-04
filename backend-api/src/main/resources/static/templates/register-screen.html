@@ -1,0 +1,23 @@
+<section class="screen login-screen-split">
+    <div class="login-screen-visual" style="background-image: url('{{loginLeftImage}}');">
+        <img src="{{loginLeftImage}}" alt="" class="login-screen-visual-img" data-alt="{{loginLeftImagePng}}" data-fallback="{{loginFallbackImage}}" onerror="var next=(this.src.indexOf('.png')!==-1)?this.dataset.fallback:(this.dataset.alt||this.dataset.fallback); this.src=next; if(next===this.dataset.fallback) this.onerror=null;">
+    </div>
+    <div class="login-screen-form-panel">
+        <div class="login-screen-header">Create Account</div>
+        <div class="login-screen-brand">
+            <img src="{{logoUrl}}" alt="BiteBot" class="login-screen-brand-logo">
+        </div>
+        <div class="login-screen-form-box">
+            <p class="login-screen-prompt">New to BiteBot? Join now to order.</p>
+            <div class="login-screen-fields">
+                <input type="text" class="login-screen-input" id="register-username" placeholder="Username" autocomplete="username">
+                <input type="password" class="login-screen-input" id="register-password" placeholder="Password" autocomplete="new-password">
+                <input type="password" class="login-screen-input" id="register-confirm" placeholder="Confirm Password" autocomplete="new-password">
+            </div>
+            <button type="button" class="login-screen-btn login-screen-btn-primary" onclick="registerAndGoToRestaurant()">CREATE ACCOUNT</button>
+            <div class="login-screen-divider"><span>or</span></div>
+            <button type="button" class="login-screen-btn login-screen-btn-outline" onclick="goToLoginScreen()">Already have an account? Sign In</button>
+        </div>
+        <div id="register-error" class="login-screen-error"></div>
+    </div>
+</section>

@@ -1,0 +1,31 @@
+<section class="checkout-section">
+    <div class="checkout-visual">
+        <img src="{{paymentImage}}" alt="Payment">
+    </div>
+    <div class="checkout-form">
+        <h2>Checkout</h2>
+        <p>Confirm delivery details before placing your order.</p>
+        <div class="mb-3">
+            <label class="form-label" for="deliveryAddress">Delivery Address</label>
+            <input class="form-control" id="deliveryAddress" type="text" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="deliveryCity">City</label>
+            <input class="form-control" id="deliveryCity" type="text" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="deliveryState">State</label>
+            <input class="form-control" id="deliveryState" type="text" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="deliveryZip">Zip</label>
+            <input class="form-control" id="deliveryZip" type="text" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label" for="orderTotal">Order Total</label>
+            <input class="form-control" id="orderTotal" type="text" value="{{totalAmount}}" readonly />
+        </div>
+        <button class="btn btn-primary" onclick="submitOrder()">Place Order</button>
+        <a class="btn btn-link" href="#" onclick="showCart();return false;">Back to Cart</a>
+    </div>
+</section>

@@ -1,0 +1,26 @@
+<section class="screen review-screen confirmation-screen">
+    <h2>Order Confirmation</h2>
+    <p class="confirmation-intro">Please review your order, payment, and delivery details before placing the order.</p>
+
+    <div class="review-section">
+        <h3>Items in Cart</h3>
+        <div id="review-order-items" class="confirmation-cart-items"></div>
+        <div class="review-totals">
+            <div class="order-row"><span>Subtotal</span><span id="review-subtotal">$0.00</span></div>
+            <div class="order-row"><span>Taxes</span><span id="review-taxes">$0.00</span></div>
+            <div class="order-row order-total-row"><span>Total</span><span id="review-total">$0.00</span></div>
+        </div>
+    </div>
+
+    <div class="review-section">
+        <h3>Payment Information</h3>
+        <div id="review-payment-full" class="confirmation-payment-details"></div>
+    </div>
+
+    <div class="review-section">
+        <h3>Delivery Address</h3>
+        <p id="review-delivery-address" class="confirmation-address"></p>
+    </div>
+
+    <button type="button" class="btn btn-primary btn-place-order" onclick="placeOrderAndGoToStatus()">Place Order</button>
+</section>
