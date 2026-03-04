@@ -133,26 +133,43 @@ function renderOrderScreen() {
     if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
 }
 
-function openCartOverlay() {
+window.openCartOverlay = function() {
     const backdrop = document.getElementById('cart-overlay-backdrop');
     const panel = document.getElementById('cart-overlay-panel');
     if (!backdrop || !panel) return;
     renderCartOverlay();
     backdrop.classList.remove('cart-overlay-backdrop--hidden');
     panel.classList.remove('cart-overlay-panel--hidden');
-}
+};
 
-function closeCartOverlay() {
+window.closeCartOverlay = function() {
     const backdrop = document.getElementById('cart-overlay-backdrop');
     const panel = document.getElementById('cart-overlay-panel');
     if (backdrop) backdrop.classList.add('cart-overlay-backdrop--hidden');
     if (panel) panel.classList.add('cart-overlay-panel--hidden');
-}
+};
 
 function renderCartOverlay() {
     const listEl = document.getElementById('cart-overlay-items-list');
+    const subtotalEl = document.getElementById('cart-overlay-subtotal');
+    const taxEl = document.getElementById('cart-overlay-tax');
+    const totalEl = document.getElementById('cart-overlay-total');
+    const checkoutBtn = document.getElementById('cart-overlay-checkout-btn');
+    
     if (!listEl) return;
     listEl.innerHTML = '';
+    
+    if (bitebotOrder.items.length === 0) {
+        listEl.innerHTML = '<p class="cart-empty-message">Your cart is empty</p>';
+        if (subtotalEl) subtotalEl.textContent = '$0.00';
+        if (taxEl) taxEl.textContent = '$0.00';
+        if (totalEl) totalEl.textContent = '$0.00';
+        if (checkoutBtn) checkoutBtn.style.display = 'none';
+        return;
+    }
+    
+    if (checkoutBtn) checkoutBtn.style.display = '';
+    
     bitebotOrder.items.forEach(item => {
         const div = document.createElement('div');
         div.className = 'cart-overlay-item-row';
@@ -170,13 +187,10 @@ function renderCartOverlay() {
         `;
         listEl.appendChild(div);
     });
+    
     const subtotal = getOrderSubtotal();
     const tax = getOrderTax();
     const total = getOrderTotal();
-    const subtotalEl = document.getElementById('cart-overlay-subtotal');
-    const taxEl = document.getElementById('cart-overlay-tax');
-    const totalEl = document.getElementById('cart-overlay-total');
-    const checkoutBtn = document.getElementById('cart-overlay-checkout-btn');
     if (subtotalEl) subtotalEl.textContent = '$' + subtotal.toFixed(2);
     if (taxEl) taxEl.textContent = '$' + tax.toFixed(2);
     if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
@@ -223,13 +237,122 @@ function deliveryOrLogin() {
     startOrderOrLogin();
 }
 
+const PRESET_DELIVERY_LOCATIONS = {
+    'campus-north': {
+        address: '100 University Ave',
+        city: 'San Jose',
+        zip: '95112',
+        state: 'CA',
+        country: 'USA',
+        cardNumber: '4111 1111 1111 1111',
+        exp: '12/28',
+        cvv: '123',
+        billingAddress: '100 University Ave',
+        billingCity: 'San Jose',
+        billingZip: '95112',
+        billingState: 'CA',
+        billingCountry: 'USA'
+    },
+    'campus-south': {
+        address: '200 College Blvd',
+        city: 'San Jose',
+        zip: '95113',
+        state: 'CA',
+        country: 'USA',
+        cardNumber: '4222 2222 2222 2222',
+        exp: '06/27',
+        cvv: '456',
+        billingAddress: '200 College Blvd',
+        billingCity: 'San Jose',
+        billingZip: '95113',
+        billingState: 'CA',
+        billingCountry: 'USA'
+    },
+    'downtown': {
+        address: '50 Main Street',
+        city: 'San Jose',
+        zip: '95110',
+        state: 'CA',
+        country: 'USA',
+        cardNumber: '4333 3333 3333 3333',
+        exp: '09/26',
+        cvv: '789',
+        billingAddress: '50 Main Street',
+        billingCity: 'San Jose',
+        billingZip: '95110',
+        billingState: 'CA',
+        billingCountry: 'USA'
+    },
+    'tech-park': {
+        address: '300 Innovation Dr',
+        city: 'San Jose',
+        zip: '95134',
+        state: 'CA',
+        country: 'USA',
+        cardNumber: '4444 4444 4444 4444',
+        exp: '03/29',
+        cvv: '321',
+        billingAddress: '300 Innovation Dr',
+        billingCity: 'San Jose',
+        billingZip: '95134',
+        billingState: 'CA',
+        billingCountry: 'USA'
+    }
+};
+
+window.fillAddressFromSelection = function() {
+    const select = document.getElementById('register-deliveryAddress');
+    const locationKey = select?.value;
+    const location = PRESET_DELIVERY_LOCATIONS[locationKey];
+    
+    if (location) {
+        document.getElementById('register-city').value = location.city;
+        document.getElementById('register-zip').value = location.zip;
+        document.getElementById('register-state').value = location.state;
+        document.getElementById('register-country').value = location.country;
+        document.getElementById('register-cardNumber').value = location.cardNumber;
+        document.getElementById('register-exp').value = location.exp;
+        document.getElementById('register-cvv').value = location.cvv;
+        document.getElementById('register-billingAddress').value = location.billingAddress;
+        document.getElementById('register-billingCity').value = location.billingCity;
+        document.getElementById('register-billingZip').value = location.billingZip;
+        document.getElementById('register-billingState').value = location.billingState;
+        document.getElementById('register-billingCountry').value = location.billingCountry;
+    } else {
+        document.getElementById('register-city').value = '';
+        document.getElementById('register-zip').value = '';
+        document.getElementById('register-state').value = '';
+        document.getElementById('register-country').value = '';
+        document.getElementById('register-cardNumber').value = '';
+        document.getElementById('register-exp').value = '';
+        document.getElementById('register-cvv').value = '';
+        document.getElementById('register-billingAddress').value = '';
+        document.getElementById('register-billingCity').value = '';
+        document.getElementById('register-billingZip').value = '';
+        document.getElementById('register-billingState').value = '';
+        document.getElementById('register-billingCountry').value = '';
+    }
+};
+
 function registerAndGoToRestaurant() {
+    const firstName = document.getElementById('register-firstName')?.value?.trim();
+    const lastName = document.getElementById('register-lastName')?.value?.trim();
+    const deliveryAddress = document.getElementById('register-deliveryAddress')?.value;
     const username = document.getElementById('register-username')?.value?.trim();
     const password = document.getElementById('register-password')?.value;
     const confirm = document.getElementById('register-confirm')?.value;
     const errEl = document.getElementById('register-error');
+    
+    if (!firstName || !lastName) {
+        if (errEl) errEl.textContent = 'Please enter your first and last name.';
+        return;
+    }
+    if (!deliveryAddress) {
+        if (errEl) errEl.textContent = 'Please select a delivery location.';
+        return;
+    }
     if (!username || !password || !confirm) {
-        if (errEl) errEl.textContent = 'Please fill in all fields.';
+        if (errEl) errEl.textContent = 'Please fill in email and password fields.';
         return;
     }
     if (password !== confirm) {
@@ -237,6 +360,17 @@ function registerAndGoToRestaurant() {
         return;
     }
     if (errEl) errEl.textContent = '';
+    
+    const profileData = {
+        firstName: firstName,
+        lastName: lastName,
+        address: document.getElementById('register-city')?.value + ', ' + document.getElementById('register-state')?.value,
+        city: document.getElementById('register-city')?.value,
+        state: document.getElementById('register-state')?.value,
+        zip: document.getElementById('register-zip')?.value,
+        deliveryCountry: document.getElementById('register-country')?.value
+    };
+    
     const url = `${config.baseUrl}/auth/register`;
     axios.post(url, {
         username: username,
@@ -254,11 +388,16 @@ function registerAndGoToRestaurant() {
                 userService.setHeaderLogin();
                 const token = data.token || data.jwt;
                 if (token) axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-                if (typeof productService !== 'undefined' && productService.enableButtons) productService.enableButtons();
-                goToRestaurantScreen();
-            } else {
-                goToRestaurantScreen();
+                
+                return axios.put(`${config.baseUrl}/profile`, profileData)
+                    .then(() => data)
+                    .catch(() => data);
             }
+            return data;
+        })
+        .then(data => {
+            if (typeof productService !== 'undefined' && productService.enableButtons) productService.enableButtons();
+            goToRestaurantScreen();
         })
         .catch(err => {
             const msg = (err.response && err.response.data && (err.response.data.message || err.response.data.error)) || err.response?.status === 400 ? 'Username may already exist.' : 'Registration failed.';
@@ -291,7 +430,7 @@ function loginAndGoToRestaurant() {
             }
         })
         .catch(() => {
-            if (errEl) errEl.innerHTML = 'Login failed. <a href="' + config.baseUrl + '/api/seed-user" target="_blank">Create test user</a>';
+            if (errEl) errEl.textContent = 'Login failed. Please check your email and password.';
         });
 }
 
@@ -875,8 +1014,6 @@ if (typeof window !== 'undefined') {
     window.setOrderQuantity = setOrderQuantity;
     window.goToRestaurantScreen = goToRestaurantScreen;
     window.goToOrderScreen = goToOrderScreen;
-    window.openCartOverlay = openCartOverlay;
-    window.closeCartOverlay = closeCartOverlay;
     window.cartOverlayGoToCheckout = cartOverlayGoToCheckout;
     window.goToBitebotCheckoutScreen = goToBitebotCheckoutScreen;
     window.toggleOrderItemsExpand = toggleOrderItemsExpand;

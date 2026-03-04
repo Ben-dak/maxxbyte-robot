@@ -11,11 +11,32 @@ function hideModalForm()
 
 function login()
 {
-    const username = document.getElementById("username").value;
-    const password = document.getElementById("password").value;
-
-    userService.login(username, password);
-    hideModalForm();
+    const username = document.getElementById("username")?.value?.trim();
+    const password = document.getElementById("password")?.value;
+    const errEl = document.getElementById("modal-login-error");
+    
+    if (!username || !password) {
+        if (errEl) errEl.textContent = 'Please enter email and password.';
+        return;
+    }
+    
+    const url = `${config.baseUrl}/auth/login`;
+    axios.post(url, { username, password })
+        .then(response => {
+            const data = response.data;
+            if (data && typeof userService !== 'undefined') {
+                userService.saveUser(data);
+                userService.setHeaderLogin();
+                const token = data.token || data.jwt;
+                if (token) axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+                if (typeof productService !== 'undefined' && productService.enableButtons) productService.enableButtons();
+                if (typeof cartService !== 'undefined' && cartService.loadCart) cartService.loadCart();
+            }
+            hideModalForm();
+        })
+        .catch(() => {
+            if (errEl) errEl.textContent = 'Login failed. Please check your email and password.';
+        });
 }
 
 function showImageDetailForm(product, imageUrl)
@@ -84,10 +105,6 @@ function saveProfile()
     profileService.updateProfile(profile);
 }
 
-function showCart()
-{
-    cartService.loadCartPage();
-}
 
 function showOrderForm()
 {
@@ -174,7 +191,7 @@ function loadRobotStatus()
 function clearCart()
 {
     cartService.clearCart();
-    cartService.loadCartPage();
+    closeCartOverlay();
 }
 
 function setCategory(control)

@@ -23,28 +23,34 @@
                 <h2 class="create-account-panel-title">PROFILE INFO <i class="fa-regular fa-user create-account-panel-icon"></i></h2>
                 <div class="create-account-fields">
                     <div class="create-account-row-fields">
-                        <input type="text" id="register-firstName" class="create-account-input" placeholder="First Name">
-                        <input type="text" id="register-lastName" class="create-account-input" placeholder="Last Name">
+                        <input type="text" id="register-firstName" class="create-account-input" placeholder="First Name" required>
+                        <input type="text" id="register-lastName" class="create-account-input" placeholder="Last Name" required>
                     </div>
                     <div class="create-account-field">
-                        <input type="text" id="register-deliveryAddress" class="create-account-input" placeholder="Delivery Address">
+                        <select id="register-deliveryAddress" class="create-account-input create-account-select" onchange="fillAddressFromSelection()">
+                            <option value="">-- Select Delivery Location --</option>
+                            <option value="campus-north">Campus North - 100 University Ave</option>
+                            <option value="campus-south">Campus South - 200 College Blvd</option>
+                            <option value="downtown">Downtown Hub - 50 Main Street</option>
+                            <option value="tech-park">Tech Park - 300 Innovation Dr</option>
+                        </select>
                     </div>
                     <div class="create-account-row-fields">
-                        <input type="text" id="register-city" class="create-account-input" placeholder="City">
-                        <input type="text" id="register-zip" class="create-account-input create-account-input-zip" placeholder="Zip">
+                        <input type="text" id="register-city" class="create-account-input" placeholder="City" readonly>
+                        <input type="text" id="register-zip" class="create-account-input create-account-input-zip" placeholder="Zip" readonly>
                     </div>
                     <div class="create-account-row-fields">
-                        <input type="text" id="register-state" class="create-account-input" placeholder="State">
-                        <input type="text" id="register-country" class="create-account-input" placeholder="Country">
+                        <input type="text" id="register-state" class="create-account-input" placeholder="State" readonly>
+                        <input type="text" id="register-country" class="create-account-input" placeholder="Country" readonly>
                     </div>
                     <div class="create-account-field">
-                        <input type="text" id="register-username" class="create-account-input" placeholder="Email Address" autocomplete="username">
+                        <input type="text" id="register-username" class="create-account-input" placeholder="Email Address" autocomplete="username" required>
                     </div>
                     <div class="create-account-field">
-                        <input type="password" id="register-password" class="create-account-input" placeholder="Password" autocomplete="new-password">
+                        <input type="password" id="register-password" class="create-account-input" placeholder="Password" autocomplete="new-password" required>
                     </div>
                     <div class="create-account-field">
-                        <input type="password" id="register-confirm" class="create-account-input" placeholder="Confirm Password" autocomplete="new-password">
+                        <input type="password" id="register-confirm" class="create-account-input" placeholder="Confirm Password" autocomplete="new-password" required>
                     </div>
                 </div>
             </div>
@@ -53,22 +59,22 @@
                 <h2 class="create-account-panel-title">BILLING INFO <i class="fa-regular fa-credit-card create-account-panel-icon"></i></h2>
                 <div class="create-account-fields">
                     <div class="create-account-field">
-                        <input type="text" id="register-cardNumber" class="create-account-input" placeholder="Debit or Credit Card Number" maxlength="19">
+                        <input type="text" id="register-cardNumber" class="create-account-input" placeholder="Debit or Credit Card Number" maxlength="19" readonly>
                     </div>
                     <div class="create-account-row-fields">
-                        <input type="text" id="register-exp" class="create-account-input create-account-input-exp" placeholder="MM/YY" maxlength="5">
-                        <input type="text" id="register-cvv" class="create-account-input create-account-input-cvv" placeholder="CVV" maxlength="4">
+                        <input type="text" id="register-exp" class="create-account-input create-account-input-exp" placeholder="MM/YY" maxlength="5" readonly>
+                        <input type="text" id="register-cvv" class="create-account-input create-account-input-cvv" placeholder="CVV" maxlength="4" readonly>
                     </div>
                     <div class="create-account-field">
-                        <input type="text" id="register-billingAddress" class="create-account-input" placeholder="Billing Address">
+                        <input type="text" id="register-billingAddress" class="create-account-input" placeholder="Billing Address" readonly>
                     </div>
                     <div class="create-account-row-fields">
-                        <input type="text" id="register-billingCity" class="create-account-input" placeholder="Billing City">
-                        <input type="text" id="register-billingZip" class="create-account-input create-account-input-zip" placeholder="Billing Zip">
+                        <input type="text" id="register-billingCity" class="create-account-input" placeholder="Billing City" readonly>
+                        <input type="text" id="register-billingZip" class="create-account-input create-account-input-zip" placeholder="Billing Zip" readonly>
                     </div>
                     <div class="create-account-row-fields">
-                        <input type="text" id="register-billingState" class="create-account-input" placeholder="Billing State">
-                        <input type="text" id="register-billingCountry" class="create-account-input" placeholder="Billing Country">
+                        <input type="text" id="register-billingState" class="create-account-input" placeholder="Billing State" readonly>
+                        <input type="text" id="register-billingCountry" class="create-account-input" placeholder="Billing Country" readonly>
                     </div>
                 </div>
             </div>

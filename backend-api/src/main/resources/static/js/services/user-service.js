@@ -162,6 +162,10 @@ class UserService {
         this.setHeaderLogin();
 
         productService.enableButtons();
+        
+        if (typeof loadHome === 'function') {
+            loadHome();
+        }
     }
 
 }

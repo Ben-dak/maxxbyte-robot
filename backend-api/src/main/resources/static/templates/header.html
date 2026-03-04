@@ -20,7 +20,7 @@
     <span class="header-welcome">Welcome&nbsp;<strong>{{displayName}}</strong></span>
     <a href="#" class="header-signin-btn" onclick="userService.logout(); return false;">SIGN OUT</a>
     {{#showCart}}
-    <div class="cart" onclick="showCart()">
+    <div class="cart" onclick="openCartOverlay()">
         <i class="fa-solid fa-cart-shopping"></i>
         <div id="cart-items">0</div>
     </div>
@@ -47,6 +47,5 @@
 </div>
 <div class="header-right">
     <a href="#" class="header-signin-btn" onclick="showLoginForm(); return false;">SIGN IN</a>
-    <i class="fa-solid fa-user header-user-icon"></i>
 </div>
 {{/loggedout}}

@@ -42,6 +42,10 @@ header .header-nav-link {
     text-transform: uppercase;
     letter-spacing: 0.05em;
     font-size: 0.95rem;
+    margin-right: 1.5rem;
+}
+header .header-nav-link:last-child {
+    margin-right: 0;
 }
 header .header-nav-order {
     font-weight: 700;
@@ -2315,6 +2319,18 @@ body:has(.bitebot-checkout-screen) {
     color: #999;
 }
 
+.create-account-select {
+    cursor: pointer;
+    background-color: #fff;
+    appearance: menulist;
+}
+
+.create-account-input[readonly] {
+    background-color: #f5f5f5;
+    color: #666;
+    cursor: not-allowed;
+}
+
 .create-account-row-fields {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -2659,4 +2675,13 @@ body:has(.bitebot-checkout-screen) {
     width: 100%;
     border-radius: 8px;
     z-index: 1;
+}
+
+/* Empty Cart Message */
+.cart-empty-message {
+    text-align: center;
+    color: #999;
+    font-size: 1.1rem;
+    padding: 2rem 1rem;
+    font-style: italic;
 }
