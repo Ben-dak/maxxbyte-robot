@@ -163,6 +163,9 @@ class UserService {
 
         productService.enableButtons();
         
+        document.body.classList.remove('has-active-order');
+        document.body.classList.remove('on-menu-page');
+        
         if (typeof loadHome === 'function') {
             loadHome();
         }

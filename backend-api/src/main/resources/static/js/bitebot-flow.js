@@ -436,6 +436,7 @@ function loginAndGoToRestaurant() {
 
 function goToRestaurantScreen() {
     document.body.classList.add('restaurant-view');
+    document.body.classList.add('on-menu-page');
     const data = {
         restaurantLogo: config.assets.restaurantLogo,
         tacoImage: config.assets.tacoImage,
@@ -452,6 +453,7 @@ function goToRestaurantScreen() {
 
 function goToOrderScreen() {
     document.body.classList.remove('restaurant-view');
+    document.body.classList.remove('on-menu-page');
     templateBuilder.build('order-screen', {}, 'main');
     setTimeout(renderOrderScreen, 50);
 }
@@ -587,6 +589,7 @@ function placeOrderFromCheckoutScreen() {
     };
     bitebotOrder.payment = payment;
     document.body.classList.remove('bitebot-checkout-active');
+    document.body.classList.add('has-active-order');
     bitebotOrder.status = 'PLACED';
     bitebotOrder.statusScreenEnteredAt = Date.now();
     saveOrderSnapshot();
@@ -770,6 +773,7 @@ function submitOrderInBackground() {
             saveOrderSnapshot();
             bitebotOrder.items = [];
             bitebotOrder.orderError = null;
+            document.body.classList.add('has-active-order');
             if (bitebotOrder.orderId) startStatusPolling();
             const main = document.getElementById('main');
             if (main && main.querySelector('.order-placed-screen')) {
@@ -814,6 +818,7 @@ function placeOrderAndGoToStatus() {
             bitebotOrder.items = [];
             bitebotOrder.statusScreenEnteredAt = Date.now();
             bitebotOrder.orderError = null;
+            document.body.classList.add('has-active-order');
             goToOrderStatusScreen();
             if (bitebotOrder.orderId) startStatusPolling();
         })
@@ -976,6 +981,7 @@ function startStatusLogoUpdater() {
 
 
 function goToOrderStatusScreen() {
+    document.body.classList.remove('on-menu-page');
     const data = getOrderStatusTemplateData();
     templateBuilder.build('order-status-screen', data, 'main', () => {
         startStatusLogoUpdater();
@@ -1026,4 +1032,5 @@ if (typeof window !== 'undefined') {
     window.returnFromOrderTracker = returnFromOrderTracker;
     window.returnFromOrderPlaced = returnFromOrderPlaced;
     window.goToOrderPlacedScreen = goToOrderPlacedScreen;
+    window.goToOrderStatusScreen = goToOrderStatusScreen;
 }

@@ -1035,6 +1035,23 @@ body.restaurant-view header {
     border-bottom: 2px solid var(--bitebot-red);
 }
 
+/* Hide TRACKER by default, show only when there's an active order */
+.header-nav-tracker {
+    display: none !important;
+}
+body.has-active-order .header-nav-tracker {
+    display: inline-block !important;
+    background-color: var(--bitebot-red);
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+/* Hide MENU link when on menu page (already there) */
+body.restaurant-view.on-menu-page .header-nav-menu {
+    display: none;
+}
+
 .restaurant-screen {
     text-align: center;
 }
