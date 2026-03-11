@@ -2,7 +2,7 @@
  * BiteBot ordering flow: Home → Login → Restaurant → Order → Payment → Review → Order Status
  */
 const TAX_RATE = 0.08;
-const STATUS_UPDATE_INTERVAL_MS = 10 * 60 * 1000;   // 10 min between status checks
+const STATUS_UPDATE_INTERVAL_MS = 30 * 1000;         // 30 sec between status checks (was 10 min)
 const STATUS_LEG_MS = 10 * 60 * 1000;                // 10 min: Order Placed → Order En Route
 const STATUS_TOTAL_MS = 20 * 60 * 1000;              // 20 min total: then Order En Route → Order Arrived
 
@@ -852,7 +852,7 @@ function placeOrderAndGoToStatus() {
 function getOrderStatusTemplateData() {
     const status = bitebotOrder.status || 'PLACED';
     const steps = { step1Class: '', step2Class: '', step3Class: '', connector1Class: '', connector2Class: '' };
-    if (status === 'PLACED') {
+    if (status === 'PLACED' || status === 'PENDING_ASSIGNMENT') {
         steps.step1Class = 'active';
         steps.connector1Class = 'pending';
         steps.connector2Class = 'pending';
@@ -861,6 +861,12 @@ function getOrderStatusTemplateData() {
         steps.step2Class = 'active';
         steps.connector1Class = 'done';
         steps.connector2Class = 'pending';
+    } else if (status === 'DELIVERED') {
+        steps.step1Class = 'done';
+        steps.step2Class = 'done';
+        steps.step3Class = 'active';
+        steps.connector1Class = 'done';
+        steps.connector2Class = 'done';
     } else {
         steps.step1Class = 'done';
         steps.step2Class = 'done';
@@ -982,31 +988,75 @@ function startStatusLogoUpdater() {
 
 function goToOrderStatusScreen() {
     document.body.classList.remove('on-menu-page');
-    const data = getOrderStatusTemplateData();
-    templateBuilder.build('order-status-screen', data, 'main', () => {
-        startStatusLogoUpdater();
-    });
-}
-
-function startStatusPolling() {
-    setInterval(() => {
-        if (!bitebotOrder.orderId) return;
+    
+    if (bitebotOrder.orderId && typeof ordersService !== 'undefined') {
         ordersService.getOrderById(bitebotOrder.orderId)
             .then(response => {
                 const order = response.data;
                 if (order && order.status) {
                     bitebotOrder.status = order.status;
+                    console.log('Fetched latest order status:', order.status);
+                }
+                const data = getOrderStatusTemplateData();
+                templateBuilder.build('order-status-screen', data, 'main', () => {
+                    startStatusLogoUpdater();
+                    if (typeof campusMap !== 'undefined' && campusMap.startAnimation) {
+                        campusMap.startAnimation();
+                    }
+                });
+            })
+            .catch(() => {
+                const data = getOrderStatusTemplateData();
+                templateBuilder.build('order-status-screen', data, 'main', () => {
+                    startStatusLogoUpdater();
+                    if (typeof campusMap !== 'undefined' && campusMap.startAnimation) {
+                        campusMap.startAnimation();
+                    }
+                });
+            });
+    } else {
+        const data = getOrderStatusTemplateData();
+        templateBuilder.build('order-status-screen', data, 'main', () => {
+            startStatusLogoUpdater();
+            if (typeof campusMap !== 'undefined' && campusMap.startAnimation) {
+                campusMap.startAnimation();
+            }
+        });
+    }
+}
+
+function pollOrderStatus() {
+    if (!bitebotOrder.orderId) return;
+    ordersService.getOrderById(bitebotOrder.orderId)
+        .then(response => {
+            const order = response.data;
+            if (order && order.status) {
+                const oldStatus = bitebotOrder.status;
+                bitebotOrder.status = order.status;
+                console.log('Order status polled:', order.status, '(was:', oldStatus + ')');
+                
+                if (oldStatus !== order.status) {
                     const data = getOrderStatusTemplateData();
                     const main = document.getElementById('main');
                     if (main && main.querySelector('.order-status-screen')) {
                         templateBuilder.build('order-status-screen', data, 'main', () => {
                             startStatusLogoUpdater();
+                            if (typeof campusMap !== 'undefined' && campusMap.startAnimation) {
+                                campusMap.startAnimation();
+                            }
                         });
                     }
                 }
-            })
-            .catch(() => {});
-    }, STATUS_UPDATE_INTERVAL_MS);
+            }
+        })
+        .catch(err => {
+            console.log('Status poll error:', err);
+        });
+}
+
+function startStatusPolling() {
+    pollOrderStatus();
+    setInterval(pollOrderStatus, STATUS_UPDATE_INTERVAL_MS);
 }
 
 if (typeof window !== 'undefined') {

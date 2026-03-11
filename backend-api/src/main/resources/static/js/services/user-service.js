@@ -175,5 +175,6 @@ class UserService {
 
 document.addEventListener('DOMContentLoaded', () => {
     userService = new UserService();
+    userService.loadUser();
     userService.setHeaderLogin();
 });
