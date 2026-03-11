@@ -592,6 +592,7 @@ function placeOrderFromCheckoutScreen() {
     document.body.classList.add('has-active-order');
     bitebotOrder.status = 'PLACED';
     bitebotOrder.statusScreenEnteredAt = Date.now();
+    if (typeof campusMap !== 'undefined' && campusMap.resetDelivered) campusMap.resetDelivered();
     saveOrderSnapshot();
     goToOrderPlacedScreen();
     submitOrderInBackground();
@@ -817,6 +818,7 @@ function placeOrderAndGoToStatus() {
             saveOrderSnapshot();
             bitebotOrder.items = [];
             bitebotOrder.statusScreenEnteredAt = Date.now();
+            if (typeof campusMap !== 'undefined' && campusMap.resetDelivered) campusMap.resetDelivered();
             bitebotOrder.orderError = null;
             document.body.classList.add('has-active-order');
             goToOrderStatusScreen();
@@ -954,6 +956,39 @@ function goToOrderPlacedScreen() {
 function returnFromOrderPlaced() {
     goToRestaurantScreen();
 }
+
+function getOrderDeliveredTemplateData() {
+    return {
+        logoUrl: config.assets.logo || '',
+        redLogoUrl: config.assets.redLogo || config.assets.logo || ''
+    };
+}
+
+window.goToOrderDeliveredScreen = function() {
+    document.body.classList.remove('has-active-order');
+    document.body.classList.remove('restaurant-view');
+    document.body.classList.remove('on-menu-page');
+    
+    // Clear the cart
+    bitebotOrder.items = [];
+    bitebotOrder.orderId = null;
+    bitebotOrder.statusScreenEnteredAt = null;
+    
+    // Update cart display to show 0
+    if (typeof updateHeaderCartCount === 'function') {
+        updateHeaderCartCount();
+    }
+    const cartCountEl = document.getElementById('cart-items');
+    if (cartCountEl) cartCountEl.textContent = '0';
+    
+    // Clear server-side cart if available
+    if (typeof cartService !== 'undefined' && cartService.clearCart) {
+        cartService.clearCart();
+    }
+    
+    const data = getOrderDeliveredTemplateData();
+    templateBuilder.build('order-delivered-screen', data, 'main');
+};
 
 function updateStatusLogoPosition() {
     const runner = document.querySelector('.order-status-screen .status-logo-runner');

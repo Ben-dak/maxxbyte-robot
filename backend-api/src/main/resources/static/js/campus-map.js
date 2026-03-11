@@ -3,8 +3,8 @@
  * Routes are arrays of [percentY, percentX] over the map image (0–100).
  */
 const campusMap = (function () {
-    const RESTAURANT_WAIT_MS = 10 * 1000;  // 10 sec at restaurant before leaving (was 10 min)
-    const ROUTE_DURATION_MS = 10 * 1000;   // 10 sec to reach destination (was 10 min)
+    const RESTAURANT_WAIT_MS = 10 * 60 * 1000;  // 10 min at restaurant before leaving
+    const ROUTE_DURATION_MS = 10 * 60 * 1000;   // 10 min to reach destination
 
     // Demo route: points as [percentFromTop, percentFromLeft] (approximate path on campus map)
     const DEMO_ROUTE = [
@@ -33,13 +33,16 @@ const campusMap = (function () {
         });
         
         if (phase === 'PLACED') {
+            // Only first step highlighted
             steps[0].classList.add('active');
         } else if (phase === 'IN_TRANSIT') {
-            steps[0].classList.add('done');
+            // First two steps highlighted
+            steps[0].classList.add('active');
             steps[1].classList.add('active');
         } else if (phase === 'DELIVERED') {
-            steps[0].classList.add('done');
-            steps[1].classList.add('done');
+            // All three steps highlighted
+            steps[0].classList.add('active');
+            steps[1].classList.add('active');
             steps[2].classList.add('active');
         }
     }
@@ -84,6 +87,24 @@ const campusMap = (function () {
         }
     }
 
+    let deliveredScreenShown = false;
+    
+    function showDeliveredScreen() {
+        if (deliveredScreenShown) return;
+        deliveredScreenShown = true;
+        
+        // Short delay to let user see the completed status bar
+        setTimeout(() => {
+            if (typeof goToOrderDeliveredScreen === 'function') {
+                goToOrderDeliveredScreen();
+            }
+        }, 1500);
+    }
+    
+    function resetDeliveredFlag() {
+        deliveredScreenShown = false;
+    }
+
     function runAnimation(robot, route, orderStartTime) {
         if (animationId != null) {
             cancelAnimationFrame(animationId);
@@ -96,16 +117,20 @@ const campusMap = (function () {
             
             if (!finished) {
                 animationId = requestAnimationFrame(tick);
+            } else {
+                showDeliveredScreen();
             }
         }
 
         // Position immediately based on elapsed time
         const elapsed = Date.now() - orderStartTime;
-        positionRobot(robot, route, elapsed);
+        const alreadyFinished = positionRobot(robot, route, elapsed);
         
-        // Continue animating if not finished
-        if (elapsed < RESTAURANT_WAIT_MS + ROUTE_DURATION_MS) {
+        // Continue animating if not finished, or show delivered screen if already done
+        if (!alreadyFinished) {
             animationId = requestAnimationFrame(tick);
+        } else {
+            showDeliveredScreen();
         }
     }
 
@@ -139,6 +164,7 @@ const campusMap = (function () {
 
     return {
         startAnimation: startAnimation,
+        resetDelivered: resetDeliveredFlag,
         getDemoRoute: function () { return DEMO_ROUTE.slice(); }
     };
 })();

@@ -1063,6 +1063,11 @@ body.restaurant-view.on-menu-page .header-nav-menu {
     margin: 0 auto;
     padding: 2rem 1.5rem;
     background: #f5f5f5;
+    min-height: 100vh;
+}
+
+body.restaurant-view {
+    background: #f5f5f5 !important;
 }
 
 .restaurant-intro {
@@ -2701,4 +2706,97 @@ body:has(.bitebot-checkout-screen) {
     font-size: 1.1rem;
     padding: 2rem 1rem;
     font-style: italic;
+}
+
+/* Order Delivered Screen */
+.order-delivered-screen {
+    min-height: calc(100vh - 60px);
+    display: flex;
+    flex-direction: column;
+    background: #ffffff;
+}
+
+.order-delivered-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+}
+
+.order-delivered-image-container {
+    margin-bottom: 1.5rem;
+    width: 100%;
+    max-width: 500px;
+}
+
+.order-delivered-image {
+    width: 100%;
+    height: auto;
+}
+
+.order-delivered-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3rem;
+    color: var(--bitebot-red);
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.order-delivered-message {
+    font-size: 1.25rem;
+    color: #333;
+    margin-bottom: 1.5rem;
+}
+
+.order-delivered-btn {
+    background: var(--bitebot-red);
+    color: #fff;
+    border: none;
+    border-radius: 30px;
+    padding: 1rem 2.5rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(200, 30, 30, 0.25);
+}
+
+.order-delivered-btn:hover {
+    background: #a6141d;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(200, 30, 30, 0.35);
+}
+
+.order-delivered-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.25rem 2rem;
+    background: #f8f8f8;
+    border-top: 1px solid #e0e0e0;
+    color: #666;
+    font-size: 0.85rem;
+}
+
+.order-delivered-footer-left {
+    color: #888;
+}
+
+.order-delivered-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #888;
+}
+
+.order-delivered-footer-logo {
+    height: 22px;
+    width: auto;
+}
+
+.order-delivered-footer-links {
+    color: #888;
 }
