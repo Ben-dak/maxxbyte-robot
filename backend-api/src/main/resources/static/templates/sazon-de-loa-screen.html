@@ -1,0 +1,59 @@
+<section class="screen restaurant-screen restaurant-screen-saffron restaurant-screen-sazon">
+    <div class="restaurant-intro">
+        <h1 class="restaurant-title">SAZON DE LOA</h1>
+        <p class="restaurant-description">Saffron & Serrano is a vibrant Indian-Mexican fusion restaurant blending bold spices, rich traditions, and fiery flavors into one unforgettable culinary experience.</p>
+    </div>
+    <div class="restaurant-menu-carousel-wrap">
+        <button type="button" class="restaurants-list-nav restaurants-list-nav-prev" onclick="scrollSazonMenu(-1)" aria-label="Previous menu items">
+            <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+        </button>
+        <div class="menu-items menu-items-saffron" id="sazon-menu-items">
+            <div class="menu-item-card menu-item-card-saffron">
+                <h3 class="menu-item-title">Tandoori Chicken Tacos</h3>
+                <div class="menu-item-row">
+                    <div class="menu-item-img-wrap">
+                        <img class="menu-item-img" src="{{tandooriTacosImage}}" alt="Tandoori Chicken Tacos">
+                        <div class="menu-item-qty-wrap">
+                            <div class="menu-item-qty">
+                                <button type="button" class="btn-qty btn-qty-gray" onclick="setOrderQuantity('tandooriChickenTacos', -1)" aria-label="Decrease quantity">−</button>
+                                <span id="sazon-qty-tandooriChickenTacos" class="menu-item-qty-value">0</span>
+                                <button type="button" class="btn-qty btn-qty-gray" onclick="setOrderQuantity('tandooriChickenTacos', 1)" aria-label="Increase quantity">+</button>
+                            </div>
+                            <button type="button" class="btn btn-add-cart" onclick="addToOrder('tandooriChickenTacos')">ADD TO CART</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-desc-wrap">
+                        <p class="menu-item-desc">Smoky tandoori-marinated chicken served in warm corn tortillas, topped with cilantro, pickled red onions, and a cooling mint crema.</p>
+                        <p class="menu-item-price">$15.00</p>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-item-card menu-item-card-saffron">
+                <h3 class="menu-item-title">Butter Chicken Enchiladas</h3>
+                <div class="menu-item-row">
+                    <div class="menu-item-img-wrap">
+                        <img class="menu-item-img" src="{{butterChickenEnchiladasImage}}" alt="Butter Chicken Enchiladas">
+                        <div class="menu-item-qty-wrap">
+                            <div class="menu-item-qty">
+                                <button type="button" class="btn-qty btn-qty-gray" onclick="setOrderQuantity('butterChickenEnchiladas', -1)" aria-label="Decrease quantity">−</button>
+                                <span id="sazon-qty-butterChickenEnchiladas" class="menu-item-qty-value">0</span>
+                                <button type="button" class="btn-qty btn-qty-gray" onclick="setOrderQuantity('butterChickenEnchiladas', 1)" aria-label="Increase quantity">+</button>
+                            </div>
+                            <button type="button" class="btn btn-add-cart" onclick="addToOrder('butterChickenEnchiladas')">ADD TO CART</button>
+                        </div>
+                    </div>
+                    <div class="menu-item-desc-wrap">
+                        <p class="menu-item-desc">Soft tortillas filled with tender butter chicken and cheese, baked in a creamy tomato-spiced sauce and finished with fresh cilantro.</p>
+                        <p class="menu-item-price">$15.00</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="restaurants-list-nav restaurants-list-nav-next" onclick="scrollSazonMenu(1)" aria-label="Next menu items">
+            <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+        </button>
+    </div>
+    <div id="saffron-checkout-bar" class="saffron-checkout-bar saffron-checkout-bar--hidden">
+        <button type="button" id="saffron-checkout-btn" class="btn saffron-checkout-btn" onclick="openCartOverlay()">CHECK OUT</button>
+    </div>
+</section>

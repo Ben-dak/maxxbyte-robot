@@ -20,11 +20,19 @@ const config = {
         restaurantLogo: 'images/logo/transparant-logo.png',
         tacoImage: 'images/logo/Tacos Photo.jpg',
         butterChickenImage: 'images/logo/Butter Chicken.jpg',
+        tandooriTacosImage: 'images/logo/Tacos Photo.jpg',
+        butterChickenEnchiladasImage: 'images/logo/Butter Chicken.jpg',
         statusPlacedImage: 'images/logo/checkmark-icon.png',
         statusEnRouteImage: 'images/logo/checkmark-icon.png',
         statusArrivedImage: 'images/logo/checkmark-icon.png',
         statusLogo: 'images/logo/status-bar-logo.png',
         redLogo: 'images/logo/red-logo.png',
-        campusMap: 'images/logo/campus-map.png'
+        campusMap: 'images/logo/campus-map.png',
+        // Restaurant list cards (optional – falls back to loginFood if not set)
+        restaurantCardBurgerKing: 'images/photos/Restaurants/burger-king-restaurant.png',
+        restaurantCardDominos: 'images/photos/Restaurants/dominoes-restaurant.png',
+        restaurantCardSazonDeLoa: 'images/photos/Restaurants/sazon-de-loa-restaurant.png',
+        restaurantCardNorthItalia: 'images/logo/login-food.jpg',
+        restaurantCardStarbucks: 'images/photos/Restaurants/starbucks-restaurant.jpg'
     }
 }
