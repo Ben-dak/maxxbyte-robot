@@ -14,4 +14,5 @@ public interface DeliveryDao {
     List<Delivery> getByStatus(String status);
     void updateStartedAt(int deliveryId, LocalDateTime startedAt);
     void updateCompletedAt(int deliveryId, LocalDateTime completedAt);
+    void updateBlockedAt(int deliveryId, LocalDateTime blockedAt);
 }

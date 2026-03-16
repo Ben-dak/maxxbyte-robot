@@ -9,6 +9,7 @@ public class Delivery {
     private String status;
     private LocalDateTime startedAt;
     private LocalDateTime completedAt;
+    private LocalDateTime blockedAt;
     private String pickupLocation;
     private String dropoffLocation;
 
@@ -16,13 +17,14 @@ public class Delivery {
     }
 
     public Delivery(int deliveryId, int orderId, Integer robotId, String status, LocalDateTime startedAt,
-                    LocalDateTime completedAt, String pickupLocation, String dropoffLocation) {
+                    LocalDateTime completedAt, LocalDateTime blockedAt, String pickupLocation, String dropoffLocation) {
         this.deliveryId = deliveryId;
         this.orderId = orderId;
         this.robotId = robotId;
         this.status = status;
         this.startedAt = startedAt;
         this.completedAt = completedAt;
+        this.blockedAt = blockedAt;
         this.pickupLocation = pickupLocation;
         this.dropoffLocation = dropoffLocation;
     }
@@ -73,6 +75,14 @@ public class Delivery {
 
     public void setCompletedAt(LocalDateTime completedAt) {
         this.completedAt = completedAt;
+    }
+
+    public LocalDateTime getBlockedAt() {
+        return blockedAt;
+    }
+
+    public void setBlockedAt(LocalDateTime blockedAt) {
+        this.blockedAt = blockedAt;
     }
 
     public String getPickupLocation() {

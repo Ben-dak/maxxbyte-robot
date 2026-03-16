@@ -164,6 +164,20 @@ public class MySqlDeliveryDao extends MySqlDaoBase implements DeliveryDao {
         }
     }
 
+    @Override
+    public void updateBlockedAt(int deliveryId, LocalDateTime blockedAt) {
+        String sql = "UPDATE deliveries SET blocked_at = ? WHERE delivery_id = ?";
+
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+            statement.setTimestamp(1, toTimestamp(blockedAt));
+            statement.setInt(2, deliveryId);
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private static Delivery mapRow(ResultSet row) throws SQLException {
         int deliveryId = row.getInt("delivery_id");
         int orderId = row.getInt("order_id");
@@ -171,6 +185,11 @@ public class MySqlDeliveryDao extends MySqlDaoBase implements DeliveryDao {
         String status = row.getString("status");
         Timestamp startedAt = row.getTimestamp("started_at");
         Timestamp completedAt = row.getTimestamp("completed_at");
+        Timestamp blockedAt = null;
+        try {
+            blockedAt = row.getTimestamp("blocked_at");
+        } catch (SQLException ignored) {
+        }
         String pickupLocation = row.getString("pickup_location");
         String dropoffLocation = row.getString("dropoff_location");
 
@@ -181,6 +200,7 @@ public class MySqlDeliveryDao extends MySqlDaoBase implements DeliveryDao {
                 status,
                 startedAt == null ? null : startedAt.toLocalDateTime(),
                 completedAt == null ? null : completedAt.toLocalDateTime(),
+                blockedAt == null ? null : blockedAt.toLocalDateTime(),
                 pickupLocation,
                 dropoffLocation
         );

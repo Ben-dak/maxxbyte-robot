@@ -176,7 +176,7 @@ class ShoppingCartService {
                  }
 
                  this.updateCartDisplay()
-                 this.loadCartPage()
+                 if (typeof closeCartOverlay === 'function') closeCartOverlay();
 
              })
              .catch(error => {

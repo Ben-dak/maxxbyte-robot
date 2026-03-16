@@ -853,11 +853,17 @@ function placeOrderAndGoToStatus() {
 
 function getOrderStatusTemplateData() {
     const status = bitebotOrder.status || 'PLACED';
-    const steps = { step1Class: '', step2Class: '', step3Class: '', connector1Class: '', connector2Class: '' };
+    const steps = { step1Class: '', step2Class: '', step3Class: '', connector1Class: '', connector2Class: '', isBlocked: false };
     if (status === 'PLACED' || status === 'PENDING_ASSIGNMENT') {
         steps.step1Class = 'active';
         steps.connector1Class = 'pending';
         steps.connector2Class = 'pending';
+    } else if (status === 'BLOCKED') {
+        steps.step1Class = 'done';
+        steps.step2Class = 'active blocked';
+        steps.connector1Class = 'done';
+        steps.connector2Class = 'pending';
+        steps.isBlocked = true;
     } else if (status === 'EN_ROUTE' || status === 'IN_TRANSIT') {
         steps.step1Class = 'done';
         steps.step2Class = 'active';
@@ -1069,7 +1075,18 @@ function pollOrderStatus() {
                 const oldStatus = bitebotOrder.status;
                 bitebotOrder.status = order.status;
                 console.log('Order status polled:', order.status, '(was:', oldStatus + ')');
-                
+
+                // Handle BLOCKED status for obstacle detection (TC-007)
+                if (typeof campusMap !== 'undefined' && campusMap.setBlocked) {
+                    if (order.status === 'BLOCKED') {
+                        campusMap.setBlocked(true);
+                        console.log('Obstacle detected - robot BLOCKED');
+                    } else if (oldStatus === 'BLOCKED' && order.status !== 'BLOCKED') {
+                        campusMap.setBlocked(false);
+                        console.log('Obstacle cleared - robot resumed');
+                    }
+                }
+
                 if (oldStatus !== order.status) {
                     const data = getOrderStatusTemplateData();
                     const main = document.getElementById('main');
@@ -1093,6 +1110,45 @@ function startStatusPolling() {
     pollOrderStatus();
     setInterval(pollOrderStatus, STATUS_UPDATE_INTERVAL_MS);
 }
+
+// TC-007: Obstacle simulation helpers (for testing)
+window.simulateObstacle = function() {
+    if (!bitebotOrder.orderId) {
+        console.log('No active order to block');
+        return;
+    }
+    const url = `${config.baseUrl}/deliveries/order/${bitebotOrder.orderId}/block`;
+    axios.post(url, {}, { headers: userService.getHeaders() })
+        .then(response => {
+            console.log('Obstacle simulated:', response.data);
+            if (typeof campusMap !== 'undefined' && campusMap.setBlocked) {
+                campusMap.setBlocked(true);
+            }
+            bitebotOrder.status = 'BLOCKED';
+        })
+        .catch(err => {
+            console.error('Failed to simulate obstacle:', err.response?.data || err.message);
+        });
+};
+
+window.clearObstacle = function() {
+    if (!bitebotOrder.orderId) {
+        console.log('No active order to unblock');
+        return;
+    }
+    const url = `${config.baseUrl}/deliveries/order/${bitebotOrder.orderId}/unblock`;
+    axios.post(url, {}, { headers: userService.getHeaders() })
+        .then(response => {
+            console.log('Obstacle cleared:', response.data);
+            if (typeof campusMap !== 'undefined' && campusMap.setBlocked) {
+                campusMap.setBlocked(false);
+            }
+            bitebotOrder.status = 'EN_ROUTE';
+        })
+        .catch(err => {
+            console.error('Failed to clear obstacle:', err.response?.data || err.message);
+        });
+};
 
 if (typeof window !== 'undefined') {
     window.goToLoginScreen = goToLoginScreen;

@@ -19,6 +19,7 @@ public class DeliverySchedulerService {
     private static final long PREP_TIME_MINUTES = 10;
     private static final long DELIVERY_TIME_MINUTES = 10;
     private static final long TOTAL_TIME_MINUTES = PREP_TIME_MINUTES + DELIVERY_TIME_MINUTES;
+    private static final long BLOCKED_AUTO_RECOVERY_MINUTES = 2;
 
     private final DeliveryDao deliveryDao;
     private final OrderDao orderDao;
@@ -36,6 +37,7 @@ public class DeliverySchedulerService {
     @Scheduled(fixedRate = 60000)
     public void processDeliveryStatusTransitions() {
         processEnRouteTransitions();
+        processBlockedRecovery();
         processDeliveredTransitions();
     }
 
@@ -67,6 +69,31 @@ public class DeliverySchedulerService {
 
                 loggingService.logDeliveryEvent(delivery, "Delivery transitioned to EN_ROUTE");
                 System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to EN_ROUTE");
+            }
+        }
+    }
+
+    private void processBlockedRecovery() {
+        List<Delivery> blockedDeliveries = deliveryDao.getByStatus("BLOCKED");
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Delivery delivery : blockedDeliveries) {
+            if (delivery.getBlockedAt() == null) {
+                continue;
+            }
+
+            long minutesBlocked = ChronoUnit.MINUTES.between(delivery.getBlockedAt(), now);
+
+            if (minutesBlocked >= BLOCKED_AUTO_RECOVERY_MINUTES) {
+                deliveryDao.updateStatus(delivery.getDeliveryId(), "EN_ROUTE");
+                deliveryDao.updateBlockedAt(delivery.getDeliveryId(), null);
+                delivery.setStatus("EN_ROUTE");
+                delivery.setBlockedAt(null);
+
+                orderDao.updateStatus(delivery.getOrderId(), "EN_ROUTE");
+
+                loggingService.logDeliveryEvent(delivery, "Obstacle auto-cleared after " + minutesBlocked + " minutes");
+                System.out.println("Delivery #" + delivery.getDeliveryId() + " auto-recovered from BLOCKED to EN_ROUTE");
             }
         }
     }

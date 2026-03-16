@@ -18,9 +18,28 @@ const campusMap = (function () {
     ];
 
     let animationId = null;
+    let isBlocked = false;
+    let blockedAt = null;
 
     function lerp(a, b, t) {
         return a + (b - a) * t;
+    }
+
+    function setBlocked(blocked, blockedTime) {
+        isBlocked = blocked;
+        blockedAt = blockedTime || null;
+        
+        const robot = document.querySelector('.order-tracker-map-robot');
+        const blockedIndicator = document.querySelector('.order-tracker-blocked-indicator');
+        
+        if (blocked) {
+            if (robot) robot.classList.add('robot-blocked');
+            if (blockedIndicator) blockedIndicator.classList.add('visible');
+            updateStatusBar('BLOCKED');
+        } else {
+            if (robot) robot.classList.remove('robot-blocked');
+            if (blockedIndicator) blockedIndicator.classList.remove('visible');
+        }
     }
 
     function updateStatusBar(phase) {
@@ -29,18 +48,26 @@ const campusMap = (function () {
         
         // Remove all state classes
         steps.forEach(step => {
-            step.classList.remove('active', 'done', 'pending');
+            step.classList.remove('active', 'done', 'pending', 'blocked');
         });
+
+        // Remove blocked class from container
+        const statusBar = document.querySelector('.order-tracker-status-bar');
+        if (statusBar) {
+            statusBar.classList.remove('status-blocked');
+        }
         
         if (phase === 'PLACED') {
-            // Only first step highlighted
             steps[0].classList.add('active');
         } else if (phase === 'IN_TRANSIT') {
-            // First two steps highlighted
             steps[0].classList.add('active');
             steps[1].classList.add('active');
+        } else if (phase === 'BLOCKED') {
+            steps[0].classList.add('active');
+            steps[1].classList.add('active');
+            steps[1].classList.add('blocked');
+            if (statusBar) statusBar.classList.add('status-blocked');
         } else if (phase === 'DELIVERED') {
-            // All three steps highlighted
             steps[0].classList.add('active');
             steps[1].classList.add('active');
             steps[2].classList.add('active');
@@ -112,6 +139,13 @@ const campusMap = (function () {
         }
 
         function tick() {
+            // If blocked, pause animation but keep checking
+            if (isBlocked) {
+                updateStatusBar('BLOCKED');
+                animationId = requestAnimationFrame(tick);
+                return;
+            }
+            
             const elapsed = Date.now() - orderStartTime;
             const finished = positionRobot(robot, route, elapsed);
             
@@ -122,15 +156,19 @@ const campusMap = (function () {
             }
         }
 
-        // Position immediately based on elapsed time
-        const elapsed = Date.now() - orderStartTime;
-        const alreadyFinished = positionRobot(robot, route, elapsed);
-        
-        // Continue animating if not finished, or show delivered screen if already done
-        if (!alreadyFinished) {
-            animationId = requestAnimationFrame(tick);
+        // Position immediately based on elapsed time (unless blocked)
+        if (!isBlocked) {
+            const elapsed = Date.now() - orderStartTime;
+            const alreadyFinished = positionRobot(robot, route, elapsed);
+            
+            if (!alreadyFinished) {
+                animationId = requestAnimationFrame(tick);
+            } else {
+                showDeliveredScreen();
+            }
         } else {
-            showDeliveredScreen();
+            updateStatusBar('BLOCKED');
+            animationId = requestAnimationFrame(tick);
         }
     }
 
@@ -145,6 +183,22 @@ const campusMap = (function () {
         let orderStartTime = Date.now();
         if (typeof bitebotOrder !== 'undefined' && bitebotOrder.statusScreenEnteredAt) {
             orderStartTime = bitebotOrder.statusScreenEnteredAt;
+        }
+
+        // Immediately update status bar based on elapsed time (fixes visual sync issue)
+        const elapsed = Date.now() - orderStartTime;
+        if (isBlocked) {
+            updateStatusBar('BLOCKED');
+        } else if (elapsed < RESTAURANT_WAIT_MS) {
+            updateStatusBar('PLACED');
+        } else {
+            const pathElapsed = elapsed - RESTAURANT_WAIT_MS;
+            const progress = Math.min(pathElapsed / ROUTE_DURATION_MS, 1);
+            if (progress >= 1) {
+                updateStatusBar('DELIVERED');
+            } else {
+                updateStatusBar('IN_TRANSIT');
+            }
         }
 
         const route = DEMO_ROUTE;
@@ -165,6 +219,8 @@ const campusMap = (function () {
     return {
         startAnimation: startAnimation,
         resetDelivered: resetDeliveredFlag,
+        setBlocked: setBlocked,
+        isBlocked: function() { return isBlocked; },
         getDemoRoute: function () { return DEMO_ROUTE.slice(); }
     };
 })();

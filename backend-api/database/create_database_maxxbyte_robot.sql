@@ -123,6 +123,7 @@ CREATE TABLE deliveries (
     status VARCHAR(50) NOT NULL,
     started_at DATETIME,
     completed_at DATETIME,
+    blocked_at DATETIME,
     pickup_location VARCHAR(200),
     dropoff_location VARCHAR(200),
     PRIMARY KEY (delivery_id),
