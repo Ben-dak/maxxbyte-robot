@@ -103,23 +103,24 @@ public class DeliverySchedulerService {
         LocalDateTime now = LocalDateTime.now();
 
         for (Delivery delivery : enRouteDeliveries) {
-            Order order = orderDao.getById(delivery.getOrderId());
-            if (order == null || order.getCreatedAt() == null) {
+            // Check how long the delivery has been EN_ROUTE (using started_at, not order.created_at)
+            if (delivery.getStartedAt() == null) {
                 continue;
             }
 
-            long minutesElapsed = ChronoUnit.MINUTES.between(order.getCreatedAt(), now);
+            long minutesInTransit = ChronoUnit.MINUTES.between(delivery.getStartedAt(), now);
 
-            if (minutesElapsed >= TOTAL_TIME_MINUTES) {
+            // Only transition to DELIVERED after 10 minutes of being EN_ROUTE
+            if (minutesInTransit >= DELIVERY_TIME_MINUTES) {
                 deliveryDao.updateStatus(delivery.getDeliveryId(), "DELIVERED");
                 deliveryDao.updateCompletedAt(delivery.getDeliveryId(), now);
                 delivery.setStatus("DELIVERED");
                 delivery.setCompletedAt(now);
 
-                orderDao.updateStatus(order.getOrderId(), "DELIVERED");
+                orderDao.updateStatus(delivery.getOrderId(), "DELIVERED");
 
-                loggingService.logDeliveryEvent(delivery, "Delivery completed - DELIVERED");
-                System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to DELIVERED");
+                loggingService.logDeliveryEvent(delivery, "Delivery completed - DELIVERED after " + minutesInTransit + " minutes in transit");
+                System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to DELIVERED (was EN_ROUTE for " + minutesInTransit + " min)");
             }
         }
     }

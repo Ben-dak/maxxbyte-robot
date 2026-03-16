@@ -6,12 +6,55 @@ const STATUS_UPDATE_INTERVAL_MS = 30 * 1000;         // 30 sec between status ch
 const STATUS_LEG_MS = 10 * 60 * 1000;                // 10 min: Order Placed → Order En Route
 const STATUS_TOTAL_MS = 20 * 60 * 1000;              // 20 min total: then Order En Route → Order Arrived
 
-const bitebotMenu = {
-    taco: { id: 'taco', name: 'Taco Combo', price: 15, image: 'tacoImage' },
-    butterChicken: { id: 'butterChicken', name: 'Butter Chicken', price: 15, image: 'butterChickenImage' },
-    tandooriChickenTacos: { id: 'tandooriChickenTacos', name: 'Tandoori Chicken Tacos', price: 15, image: 'tandooriTacosImage' },
-    butterChickenEnchiladas: { id: 'butterChickenEnchiladas', name: 'Butter Chicken Enchiladas', price: 15, image: 'butterChickenEnchiladasImage' }
+// Restaurant definitions
+const bitebotRestaurants = {
+    pizzaPalace: { id: 1, name: 'Pizza Palace', description: 'Fresh pizzas made with authentic Italian recipes and premium ingredients.' },
+    burgerHouse: { id: 2, name: 'Burger House', description: 'Gourmet burgers crafted with Angus beef and fresh toppings.' },
+    sushiWorld: { id: 3, name: 'Sushi World', description: 'Traditional Japanese sushi and sashimi made with the freshest fish.' },
+    saffronSerrano: { id: 4, name: 'Saffron & Serrano', description: 'Saffron & Serrano is a vibrant Indian-Mexican fusion restaurant blending bold spices, rich traditions, and fiery flavors into one unforgettable culinary experience.' }
 };
+
+// Menu items organized by restaurant (categoryId matches restaurant id)
+const bitebotMenu = {
+    // Pizza Palace (category 1)
+    pepperoniPizza: { id: 'pepperoniPizza', name: 'Pepperoni Pizza', price: 14.99, image: 'pepperoniImage', categoryId: 1, description: 'Classic pepperoni with mozzarella cheese' },
+    margheritaPizza: { id: 'margheritaPizza', name: 'Margherita Pizza', price: 12.99, image: 'margheritaImage', categoryId: 1, description: 'Fresh basil, tomatoes, and mozzarella' },
+    bbqChickenPizza: { id: 'bbqChickenPizza', name: 'BBQ Chicken Pizza', price: 15.99, image: 'bbqChickenPizzaImage', categoryId: 1, description: 'Grilled chicken with tangy BBQ sauce' },
+    garlicBreadsticks: { id: 'garlicBreadsticks', name: 'Garlic Breadsticks', price: 5.99, image: 'garlicBreadImage', categoryId: 1, description: 'Warm breadsticks with garlic butter' },
+    caesarSalad: { id: 'caesarSalad', name: 'Caesar Salad', price: 8.99, image: 'caesarSaladImage', categoryId: 1, description: 'Crisp romaine with parmesan and croutons' },
+    
+    // Burger House (category 2)
+    classicCheeseburger: { id: 'classicCheeseburger', name: 'Classic Cheeseburger', price: 11.99, image: 'cheeseburgerImage', categoryId: 2, description: 'Angus beef with cheddar and pickles' },
+    baconBbqBurger: { id: 'baconBbqBurger', name: 'Bacon BBQ Burger', price: 13.99, image: 'bbqBurgerImage', categoryId: 2, description: 'Smoky bacon with BBQ sauce and onion rings' },
+    mushroomSwissBurger: { id: 'mushroomSwissBurger', name: 'Mushroom Swiss Burger', price: 12.99, image: 'mushroomBurgerImage', categoryId: 2, description: 'Sautéed mushrooms with Swiss cheese' },
+    crispyFries: { id: 'crispyFries', name: 'Crispy Fries', price: 4.99, image: 'friesImage', categoryId: 2, description: 'Golden crispy seasoned fries' },
+    onionRings: { id: 'onionRings', name: 'Onion Rings', price: 5.99, image: 'onionRingsImage', categoryId: 2, description: 'Beer-battered crispy onion rings' },
+    chocolateMilkshake: { id: 'chocolateMilkshake', name: 'Chocolate Milkshake', price: 6.99, image: 'milkshakeImage', categoryId: 2, description: 'Thick and creamy chocolate shake' },
+    
+    // Sushi World (category 3)
+    californiaRoll: { id: 'californiaRoll', name: 'California Roll', price: 9.99, image: 'californiaRollImage', categoryId: 3, description: 'Crab, avocado, and cucumber (8 pcs)' },
+    salmonSashimi: { id: 'salmonSashimi', name: 'Salmon Sashimi', price: 15.99, image: 'salmonSashimiImage', categoryId: 3, description: 'Fresh Atlantic salmon slices (6 pcs)' },
+    dragonRoll: { id: 'dragonRoll', name: 'Dragon Roll', price: 16.99, image: 'dragonRollImage', categoryId: 3, description: 'Eel and cucumber topped with avocado (8 pcs)' },
+    spicyTunaRoll: { id: 'spicyTunaRoll', name: 'Spicy Tuna Roll', price: 12.99, image: 'spicyTunaImage', categoryId: 3, description: 'Fresh tuna with spicy mayo (8 pcs)' },
+    misoSoup: { id: 'misoSoup', name: 'Miso Soup', price: 3.99, image: 'misoSoupImage', categoryId: 3, description: 'Traditional Japanese soybean soup' },
+    edamame: { id: 'edamame', name: 'Edamame', price: 4.99, image: 'edamameImage', categoryId: 3, description: 'Steamed soybeans with sea salt' },
+    
+    // Saffron & Serrano (category 4)
+    tacoCombo: { id: 'tacoCombo', name: 'Taco Combo', price: 15.00, image: 'tacoImage', categoryId: 4, description: 'Three ribeye steak tacos with basmati rice' },
+    butterChicken: { id: 'butterChicken', name: 'Butter Chicken', price: 15.00, image: 'butterChickenImage', categoryId: 4, description: 'Tender chicken in creamy tomato sauce' },
+    chickenTikkaMasala: { id: 'chickenTikkaMasala', name: 'Chicken Tikka Masala', price: 14.99, image: 'tikkaMasalaImage', categoryId: 4, description: 'Grilled chicken in spiced curry sauce' },
+    loadedNachos: { id: 'loadedNachos', name: 'Loaded Nachos', price: 11.99, image: 'nachosImage', categoryId: 4, description: 'Crispy tortillas with cheese and guacamole' },
+    mangoLassi: { id: 'mangoLassi', name: 'Mango Lassi', price: 4.99, image: 'mangoLassiImage', categoryId: 4, description: 'Sweet mango yogurt drink' },
+    churros: { id: 'churros', name: 'Churros', price: 6.99, image: 'churrosImage', categoryId: 4, description: 'Cinnamon sugar churros with chocolate sauce' }
+};
+
+// Helper to get menu items by restaurant/category
+function getMenuItemsByCategory(categoryId) {
+    return Object.values(bitebotMenu).filter(item => item.categoryId === categoryId);
+}
+
+// Current selected restaurant
+let currentRestaurantId = 4; // Default to Saffron & Serrano
 
 let bitebotOrder = {
     items: [],
@@ -443,10 +486,10 @@ function goToRestaurantsListScreen() {
     document.body.classList.remove('on-menu-page');
     const cardImage = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
     const data = {
-        restaurantCardImage1: config.assets.restaurantCardBurgerKing || cardImage,
-        restaurantCardImage2: config.assets.restaurantCardDominos || cardImage,
-        restaurantCardImage3: config.assets.restaurantCardSazonDeLoa || cardImage,
-        restaurantCardImage4: config.assets.restaurantCardStarbucks || cardImage
+        restaurantCardPizzaPalace: config.assets.restaurantCardPizzaPalace || cardImage,
+        restaurantCardBurgerHouse: config.assets.restaurantCardBurgerHouse || cardImage,
+        restaurantCardSushiWorld: config.assets.restaurantCardSushiWorld || cardImage,
+        restaurantCardSaffronSerrano: config.assets.restaurantCardSaffronSerrano || cardImage
     };
     templateBuilder.build('restaurants-list-screen', data, 'main');
 }
@@ -497,21 +540,45 @@ function scrollSazonMenu(direction) {
     el.scrollBy({ left: direction * 400, behavior: 'smooth' });
 }
 
-function goToRestaurantScreen() {
+function goToRestaurantScreen(restaurantId) {
+    // Default to Saffron & Serrano if no ID provided
+    restaurantId = restaurantId || 4;
+    currentRestaurantId = restaurantId;
+    
     document.body.classList.add('restaurant-view');
     document.body.classList.add('on-menu-page');
-    const data = {
-        restaurantLogo: config.assets.restaurantLogo,
-        tacoImage: config.assets.tacoImage,
-        butterChickenImage: config.assets.butterChickenImage
+    
+    // Get restaurant info
+    const restaurantMap = {
+        1: bitebotRestaurants.pizzaPalace,
+        2: bitebotRestaurants.burgerHouse,
+        3: bitebotRestaurants.sushiWorld,
+        4: bitebotRestaurants.saffronSerrano
     };
+    const restaurant = restaurantMap[restaurantId] || bitebotRestaurants.saffronSerrano;
+    
+    // Get menu items for this restaurant
+    const menuItems = getMenuItemsByCategory(restaurantId).map(item => ({
+        id: item.id,
+        name: item.name,
+        description: item.description,
+        priceFormatted: item.price.toFixed(2),
+        imageUrl: config.assets[item.image] || config.assets.loginFood
+    }));
+    
+    const data = {
+        restaurantName: restaurant.name,
+        restaurantDescription: restaurant.description,
+        menuItems: menuItems
+    };
+    
     templateBuilder.build('restaurant-screen', data, 'main', function () {
         updateHeaderCartCount();
+        const checkoutBar = document.getElementById('saffron-checkout-bar');
+        if (checkoutBar && bitebotOrder.items.length > 0) {
+            checkoutBar.classList.remove('saffron-checkout-bar--hidden');
+        }
     });
-    const checkoutBar = document.getElementById('saffron-checkout-bar');
-    if (checkoutBar && bitebotOrder.items.length > 0) {
-        checkoutBar.classList.remove('saffron-checkout-bar--hidden');
-    }
 }
 
 function goToOrderScreen() {
