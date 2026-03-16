@@ -218,5 +218,10 @@ function closeError(control)
    PAGE LOAD INITIALIZATION
    =========================== */
 document.addEventListener('DOMContentLoaded', () => {
-    loadHome();
+    // If already logged in, show restaurants list; otherwise show home
+    if (typeof userService !== 'undefined' && userService.isLoggedIn() && typeof goToRestaurantsListScreen === 'function') {
+        goToRestaurantsListScreen();
+    } else {
+        loadHome();
+    }
 });

@@ -8,7 +8,9 @@ const STATUS_TOTAL_MS = 20 * 60 * 1000;              // 20 min total: then Order
 
 const bitebotMenu = {
     taco: { id: 'taco', name: 'Taco Combo', price: 15, image: 'tacoImage' },
-    butterChicken: { id: 'butterChicken', name: 'Butter Chicken', price: 15, image: 'butterChickenImage' }
+    butterChicken: { id: 'butterChicken', name: 'Butter Chicken', price: 15, image: 'butterChickenImage' },
+    tandooriChickenTacos: { id: 'tandooriChickenTacos', name: 'Tandoori Chicken Tacos', price: 15, image: 'tandooriTacosImage' },
+    butterChickenEnchiladas: { id: 'butterChickenEnchiladas', name: 'Butter Chicken Enchiladas', price: 15, image: 'butterChickenEnchiladasImage' }
 };
 
 let bitebotOrder = {
@@ -99,6 +101,7 @@ function setOrderQuantity(mealId, delta) {
             if (checkoutBar) checkoutBar.classList.add('saffron-checkout-bar--hidden');
         }
     }
+    if (typeof updateSazonMenuQuantities === 'function') updateSazonMenuQuantities();
 }
 
 function renderOrderScreen() {
@@ -223,10 +226,10 @@ function goToRegisterScreen() {
     }, 'main');
 }
 
-/** If already logged in, go to restaurant; otherwise show login. Use for START YOUR ORDER and DELIVERY. */
+/** If already logged in, go to restaurants list; otherwise show login. Use for START YOUR ORDER and DELIVERY. */
 function startOrderOrLogin() {
     if (typeof userService !== 'undefined' && userService.isLoggedIn()) {
-        goToRestaurantScreen();
+        goToRestaurantsListScreen();
     } else {
         goToLoginScreen();
     }
@@ -397,7 +400,7 @@ function registerAndGoToRestaurant() {
         })
         .then(data => {
             if (typeof productService !== 'undefined' && productService.enableButtons) productService.enableButtons();
-            goToRestaurantScreen();
+            goToRestaurantsListScreen();
         })
         .catch(err => {
             const msg = (err.response && err.response.data && (err.response.data.message || err.response.data.error)) || err.response?.status === 400 ? 'Username may already exist.' : 'Registration failed.';
@@ -424,14 +427,74 @@ function loginAndGoToRestaurant() {
                 const token = data.token || data.jwt;
                 if (token) axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
                 if (typeof productService !== 'undefined' && productService.enableButtons) productService.enableButtons();
-                goToRestaurantScreen();
+                goToRestaurantsListScreen();
             } else {
-                goToRestaurantScreen();
+                goToRestaurantsListScreen();
             }
         })
         .catch(() => {
             if (errEl) errEl.textContent = 'Login failed. Please check your email and password.';
         });
+}
+
+/** Restaurants listing (cards). Shown after login; clicking a card goes to restaurant menu. */
+function goToRestaurantsListScreen() {
+    document.body.classList.remove('restaurant-view');
+    document.body.classList.remove('on-menu-page');
+    const cardImage = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
+    const data = {
+        restaurantCardImage1: config.assets.restaurantCardBurgerKing || cardImage,
+        restaurantCardImage2: config.assets.restaurantCardDominos || cardImage,
+        restaurantCardImage3: config.assets.restaurantCardSazonDeLoa || cardImage,
+        restaurantCardImage4: config.assets.restaurantCardStarbucks || cardImage
+    };
+    templateBuilder.build('restaurants-list-screen', data, 'main');
+}
+
+function scrollRestaurantCards(direction) {
+    const el = document.getElementById('restaurants-list-cards');
+    if (!el) return;
+    const pageWidth = el.clientWidth;
+    const maxScroll = el.scrollWidth - pageWidth;
+    if (maxScroll <= 0) return;
+    var current = el.scrollLeft;
+    var onFirstPage = current < pageWidth * 0.5;
+    var onSecondPage = current >= pageWidth * 0.5;
+    var targetScroll = (direction > 0) ? (onSecondPage ? 0 : pageWidth) : (onFirstPage ? pageWidth : 0);
+    el.scrollTo({ left: targetScroll, behavior: 'smooth' });
+}
+
+function goToSazonDeLoaScreen() {
+    document.body.classList.add('restaurant-view');
+    document.body.classList.add('on-menu-page');
+    const cardImage = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
+    const data = {
+        tandooriTacosImage: config.assets.tandooriTacosImage || config.assets.tacoImage || cardImage,
+        butterChickenEnchiladasImage: config.assets.butterChickenEnchiladasImage || config.assets.butterChickenImage || cardImage
+    };
+    templateBuilder.build('sazon-de-loa-screen', data, 'main', function () {
+        updateHeaderCartCount();
+        updateSazonMenuQuantities();
+    });
+    const checkoutBar = document.getElementById('saffron-checkout-bar');
+    if (checkoutBar && bitebotOrder.items.length > 0) {
+        checkoutBar.classList.remove('saffron-checkout-bar--hidden');
+    }
+}
+
+function updateSazonMenuQuantities() {
+    ['tandooriChickenTacos', 'butterChickenEnchiladas'].forEach(function (mealId) {
+        const el = document.getElementById('sazon-qty-' + mealId);
+        if (!el) return;
+        const item = bitebotOrder.items.find(i => i.id === mealId);
+        el.textContent = item ? item.quantity : 0;
+    });
+}
+
+function scrollSazonMenu(direction) {
+    const el = document.getElementById('sazon-menu-items');
+    if (!el) return;
+    el.scrollBy({ left: direction * 400, behavior: 'smooth' });
 }
 
 function goToRestaurantScreen() {
@@ -1159,6 +1222,11 @@ if (typeof window !== 'undefined') {
     window.loginAndGoToRestaurant = loginAndGoToRestaurant;
     window.addToOrder = addToOrder;
     window.setOrderQuantity = setOrderQuantity;
+    window.goToRestaurantsListScreen = goToRestaurantsListScreen;
+    window.scrollRestaurantCards = scrollRestaurantCards;
+    window.goToSazonDeLoaScreen = goToSazonDeLoaScreen;
+    window.updateSazonMenuQuantities = updateSazonMenuQuantities;
+    window.scrollSazonMenu = scrollSazonMenu;
     window.goToRestaurantScreen = goToRestaurantScreen;
     window.goToOrderScreen = goToOrderScreen;
     window.cartOverlayGoToCheckout = cartOverlayGoToCheckout;
