@@ -3,9 +3,9 @@
  * Routes are arrays of [percentY, percentX] over the map image (0–100).
  */
 const campusMap = (function () {
-    // TESTING MODE: 10 seconds per phase (change back to 10 * 60 * 1000 for production)
-    const RESTAURANT_WAIT_MS = 10 * 1000;  // 10 sec at restaurant before leaving
-    const ROUTE_DURATION_MS = 10 * 1000;   // 10 sec to reach destination
+    // PRODUCTION: 10 minutes per phase
+    const RESTAURANT_WAIT_MS = 10 * 60 * 1000;  // 10 min at restaurant before leaving
+    const ROUTE_DURATION_MS = 10 * 60 * 1000;   // 10 min to reach destination
 
     // Demo route: points as [percentFromTop, percentFromLeft] (approximate path on campus map)
     const DEMO_ROUTE = [

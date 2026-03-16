@@ -1057,6 +1057,20 @@ body.on-register-page header {
     display: none !important;
 }
 
+/* Delivered page - show only RETURN HOME */
+.header-links-delivered {
+    display: none;
+    gap: 24px;
+    align-items: center;
+}
+body.on-delivered-page .header-links-default,
+body.on-delivered-page .header-links-restaurant {
+    display: none !important;
+}
+body.on-delivered-page .header-links-delivered {
+    display: flex;
+}
+
 /* Hide TRACKER by default, show only when there's an active order */
 .header-nav-tracker {
     display: none !important;

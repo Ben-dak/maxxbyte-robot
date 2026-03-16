@@ -1117,24 +1117,23 @@ window.goToOrderDeliveredScreen = function() {
     document.body.classList.remove('has-active-order');
     document.body.classList.remove('restaurant-view');
     document.body.classList.remove('on-menu-page');
-    
-    // Clear the cart
+    document.body.classList.add('on-delivered-page');
+
+    // Clear the local cart state
     bitebotOrder.items = [];
     bitebotOrder.orderId = null;
     bitebotOrder.statusScreenEnteredAt = null;
-    
+
     // Update cart display to show 0
     if (typeof updateHeaderCartCount === 'function') {
         updateHeaderCartCount();
     }
     const cartCountEl = document.getElementById('cart-items');
     if (cartCountEl) cartCountEl.textContent = '0';
-    
-    // Clear server-side cart if available
-    if (typeof cartService !== 'undefined' && cartService.clearCart) {
-        cartService.clearCart();
-    }
-    
+
+    // Note: Server-side cart was already cleared when order was placed
+    // Do NOT call cartService.clearCart() here as it may fail and show error
+
     const data = getOrderDeliveredTemplateData();
     templateBuilder.build('order-delivered-screen', data, 'main');
 };
@@ -1299,23 +1298,28 @@ window.cancelDelivery = function() {
         alert('No active order to cancel.');
         return;
     }
-    
+
     // Confirm with user before cancelling
     if (!confirm('Are you sure you want to cancel this order?')) {
         return;
     }
-    
+
     const url = `${config.baseUrl}/deliveries/order/${bitebotOrder.orderId}/abort`;
     axios.post(url, {}, { headers: userService.getHeaders() })
         .then(response => {
             console.log('Order cancelled:', response.data);
             bitebotOrder.status = 'CANCELLED';
             bitebotOrder.orderId = null;
-            document.body.classList.remove('has-active-order');
             
+            // Clear the cart and reset count
+            bitebotOrder.items = [];
+            updateHeaderCartCount();
+            
+            document.body.classList.remove('has-active-order');
+
             // Show cancellation confirmation
             alert('Your order has been cancelled.');
-            
+
             // Return to home
             if (typeof loadHome === 'function') {
                 loadHome();

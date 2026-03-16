@@ -55,6 +55,7 @@ function loadHome()
     document.body.classList.remove('on-menu-page');
     document.body.classList.remove('on-login-page');
     document.body.classList.remove('on-register-page');
+    document.body.classList.remove('on-delivered-page');
     const data = {
         image1: config.assets.homeImage1,
         image2: config.assets.homeImage2,

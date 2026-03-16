@@ -16,16 +16,11 @@ import java.util.List;
 @Service
 public class DeliverySchedulerService {
 
-    // TESTING MODE: 10 seconds per phase (change back to 10 for production)
-    private static final long PREP_TIME_MINUTES = 0;  // Using seconds check below
-    private static final long DELIVERY_TIME_MINUTES = 0;  // Using seconds check below
+    // PRODUCTION: 10 minutes per phase
+    private static final long PREP_TIME_MINUTES = 10;
+    private static final long DELIVERY_TIME_MINUTES = 10;
     private static final long TOTAL_TIME_MINUTES = PREP_TIME_MINUTES + DELIVERY_TIME_MINUTES;
-    private static final long BLOCKED_AUTO_RECOVERY_MINUTES = 0;
-    
-    // TESTING: Use seconds instead of minutes
-    private static final long PREP_TIME_SECONDS = 10;
-    private static final long DELIVERY_TIME_SECONDS = 10;
-    private static final long BLOCKED_AUTO_RECOVERY_SECONDS = 10;
+    private static final long BLOCKED_AUTO_RECOVERY_MINUTES = 2;
 
     private final DeliveryDao deliveryDao;
     private final OrderDao orderDao;
@@ -40,8 +35,8 @@ public class DeliverySchedulerService {
         this.loggingService = loggingService;
     }
 
-    // TESTING: Run every 5 seconds (change back to 60000 for production)
-    @Scheduled(fixedRate = 5000)
+    // PRODUCTION: Run every 60 seconds
+    @Scheduled(fixedRate = 60000)
     public void processDeliveryStatusTransitions() {
         processEnRouteTransitions();
         processBlockedRecovery();
@@ -58,10 +53,9 @@ public class DeliverySchedulerService {
                 continue;
             }
 
-            // TESTING: Use seconds instead of minutes
-            long secondsElapsed = ChronoUnit.SECONDS.between(order.getCreatedAt(), now);
+            long minutesElapsed = ChronoUnit.MINUTES.between(order.getCreatedAt(), now);
 
-            if (secondsElapsed >= PREP_TIME_SECONDS) {
+            if (minutesElapsed >= PREP_TIME_MINUTES) {
                 Robot availableRobot = findAvailableRobot();
                 if (availableRobot != null) {
                     deliveryDao.assignRobot(delivery.getDeliveryId(), availableRobot.getRobotId());
@@ -90,10 +84,9 @@ public class DeliverySchedulerService {
                 continue;
             }
 
-            // TESTING: Use seconds instead of minutes
-            long secondsBlocked = ChronoUnit.SECONDS.between(delivery.getBlockedAt(), now);
+            long minutesBlocked = ChronoUnit.MINUTES.between(delivery.getBlockedAt(), now);
 
-            if (secondsBlocked >= BLOCKED_AUTO_RECOVERY_SECONDS) {
+            if (minutesBlocked >= BLOCKED_AUTO_RECOVERY_MINUTES) {
                 deliveryDao.updateStatus(delivery.getDeliveryId(), "EN_ROUTE");
                 deliveryDao.updateBlockedAt(delivery.getDeliveryId(), null);
                 delivery.setStatus("EN_ROUTE");
@@ -101,7 +94,7 @@ public class DeliverySchedulerService {
 
                 orderDao.updateStatus(delivery.getOrderId(), "EN_ROUTE");
 
-                loggingService.logDeliveryEvent(delivery, "Obstacle auto-cleared after " + secondsBlocked + " seconds");
+                loggingService.logDeliveryEvent(delivery, "Obstacle auto-cleared after " + minutesBlocked + " minutes");
                 System.out.println("Delivery #" + delivery.getDeliveryId() + " auto-recovered from BLOCKED to EN_ROUTE");
             }
         }
@@ -117,11 +110,10 @@ public class DeliverySchedulerService {
                 continue;
             }
 
-            // TESTING: Use seconds instead of minutes
-            long secondsInTransit = ChronoUnit.SECONDS.between(delivery.getStartedAt(), now);
+            long minutesInTransit = ChronoUnit.MINUTES.between(delivery.getStartedAt(), now);
 
             // Only transition to DELIVERED after being EN_ROUTE for required time
-            if (secondsInTransit >= DELIVERY_TIME_SECONDS) {
+            if (minutesInTransit >= DELIVERY_TIME_MINUTES) {
                 deliveryDao.updateStatus(delivery.getDeliveryId(), "DELIVERED");
                 deliveryDao.updateCompletedAt(delivery.getDeliveryId(), now);
                 delivery.setStatus("DELIVERED");
@@ -129,8 +121,8 @@ public class DeliverySchedulerService {
 
                 orderDao.updateStatus(delivery.getOrderId(), "DELIVERED");
 
-                loggingService.logDeliveryEvent(delivery, "Delivery completed - DELIVERED after " + secondsInTransit + " seconds in transit");
-                System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to DELIVERED (was EN_ROUTE for " + secondsInTransit + " sec)");
+                loggingService.logDeliveryEvent(delivery, "Delivery completed - DELIVERED after " + minutesInTransit + " minutes in transit");
+                System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to DELIVERED (was EN_ROUTE for " + minutesInTransit + " min)");
             }
         }
     }
