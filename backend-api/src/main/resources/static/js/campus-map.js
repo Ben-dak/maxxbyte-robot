@@ -142,14 +142,27 @@ const campusMap = (function () {
         }
     }
 
-    let deliveredScreenShown = false;
-    
+let deliveredScreenShown = false;
+
     function showDeliveredScreen() {
         if (deliveredScreenShown) return;
-        deliveredScreenShown = true;
         
+        // Don't show delivered screen if order was cancelled
+        if (typeof bitebotOrder !== 'undefined') {
+            if (bitebotOrder.status === 'CANCELLED' || !bitebotOrder.orderId) {
+                return;
+            }
+        }
+        
+        deliveredScreenShown = true;
+
         // Short delay to let user see the completed status bar
         setTimeout(() => {
+            // Double-check order wasn't cancelled during the delay
+            if (typeof bitebotOrder !== 'undefined' && 
+                (bitebotOrder.status === 'CANCELLED' || !bitebotOrder.orderId)) {
+                return;
+            }
             if (typeof goToOrderDeliveredScreen === 'function') {
                 goToOrderDeliveredScreen();
             }

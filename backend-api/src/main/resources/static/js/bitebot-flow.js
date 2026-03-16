@@ -292,6 +292,16 @@ function deliveryOrLogin() {
     startOrderOrLogin();
 }
 
+/** Handle ORDER NOW click: if active order exists, go to tracker; otherwise go to restaurants. */
+function handleOrderNow() {
+    // Check if there's an active order
+    if (bitebotOrder.orderId && bitebotOrder.status !== 'DELIVERED' && bitebotOrder.status !== 'CANCELLED') {
+        goToOrderStatusScreen();
+    } else {
+        goToRestaurantsListScreen();
+    }
+}
+
 const PRESET_DELIVERY_LOCATIONS = {
     'campus-north': {
         address: '100 University Ave',
@@ -1341,6 +1351,7 @@ if (typeof window !== 'undefined') {
     window.addToOrder = addToOrder;
     window.setOrderQuantity = setOrderQuantity;
     window.goToRestaurantsListScreen = goToRestaurantsListScreen;
+    window.handleOrderNow = handleOrderNow;
     window.scrollRestaurantCards = scrollRestaurantCards;
     window.goToSazonDeLoaScreen = goToSazonDeLoaScreen;
     window.updateSazonMenuQuantities = updateSazonMenuQuantities;
