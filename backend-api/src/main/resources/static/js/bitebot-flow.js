@@ -1280,6 +1280,40 @@ window.clearObstacle = function() {
         });
 };
 
+// TC-012: Cancel Order / Manual Abort
+window.cancelDelivery = function() {
+    if (!bitebotOrder.orderId) {
+        alert('No active order to cancel.');
+        return;
+    }
+    
+    // Confirm with user before cancelling
+    if (!confirm('Are you sure you want to cancel this order?')) {
+        return;
+    }
+    
+    const url = `${config.baseUrl}/deliveries/order/${bitebotOrder.orderId}/abort`;
+    axios.post(url, {}, { headers: userService.getHeaders() })
+        .then(response => {
+            console.log('Order cancelled:', response.data);
+            bitebotOrder.status = 'CANCELLED';
+            bitebotOrder.orderId = null;
+            document.body.classList.remove('has-active-order');
+            
+            // Show cancellation confirmation
+            alert('Your order has been cancelled.');
+            
+            // Return to home
+            if (typeof loadHome === 'function') {
+                loadHome();
+            }
+        })
+        .catch(err => {
+            console.error('Cancel order failed:', err.response?.data || err.message);
+            alert('Unable to cancel order. Please contact support.');
+        });
+};
+
 if (typeof window !== 'undefined') {
     window.goToLoginScreen = goToLoginScreen;
     window.goToRegisterScreen = goToRegisterScreen;

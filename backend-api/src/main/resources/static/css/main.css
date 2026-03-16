@@ -2177,6 +2177,52 @@ body.restaurant-view {
     border: 2px solid #dc3545;
 }
 
+/* TC-012: Cancel Order Button */
+.order-tracker-cancel-container {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+
+.order-tracker-cancel-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    border-radius: 6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+.order-tracker-cancel-btn:hover {
+    background: #c82333;
+}
+
+.order-tracker-cancel-btn:active {
+    background: #a71d2a;
+}
+
+.order-tracker-cancel-btn i {
+    font-size: 1rem;
+}
+
+/* Cancelled state styling */
+.order-tracker-cancelled-banner {
+    background: #6c757d;
+    color: white;
+    padding: 1rem;
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
 @media (max-width: 900px) {
     .order-tracker-layout {
         grid-template-columns: 1fr;

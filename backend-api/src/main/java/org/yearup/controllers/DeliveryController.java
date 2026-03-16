@@ -113,4 +113,48 @@ public class DeliveryController {
         }
         return resolveObstacle(delivery.getDeliveryId());
     }
+
+    /**
+     * TC-012: Manual Stop / E-Stop endpoint
+     * Allows user to abort/cancel an active delivery
+     */
+    @PostMapping("/{deliveryId}/abort")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER','CUSTOMER')")
+    public Map<String, Object> abortDelivery(@PathVariable int deliveryId) {
+        Delivery delivery = deliveryDao.getById(deliveryId);
+        if (delivery == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found.");
+        }
+
+        String currentStatus = delivery.getStatus();
+        if ("DELIVERED".equals(currentStatus) || "CANCELLED".equals(currentStatus)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Cannot abort delivery. Current status: " + currentStatus);
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        deliveryDao.updateStatus(deliveryId, "CANCELLED");
+        deliveryDao.updateCompletedAt(deliveryId, now);
+        orderDao.updateStatus(delivery.getOrderId(), "CANCELLED");
+
+        loggingService.logDeliveryEvent(delivery, "EMERGENCY STOP - Delivery manually aborted by user");
+        System.out.println("*** E-STOP *** Delivery #" + deliveryId + " CANCELLED at " + now);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("deliveryId", deliveryId);
+        response.put("status", "CANCELLED");
+        response.put("cancelledAt", now.toString());
+        response.put("message", "Delivery has been stopped. Robot returning to base.");
+        return response;
+    }
+
+    @PostMapping("/order/{orderId}/abort")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER','CUSTOMER')")
+    public Map<String, Object> abortDeliveryByOrderId(@PathVariable int orderId) {
+        Delivery delivery = deliveryDao.getByOrderId(orderId);
+        if (delivery == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found for order.");
+        }
+        return abortDelivery(delivery.getDeliveryId());
+    }
 }
