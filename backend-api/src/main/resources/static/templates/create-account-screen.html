@@ -26,10 +26,9 @@
                     <div class="create-account-field">
                         <select id="register-deliveryAddress" class="create-account-input create-account-select" onchange="fillAddressFromSelection()">
                             <option value="">-- Select Delivery Location --</option>
-                            <option value="campus-north">Campus North - 100 University Ave</option>
-                            <option value="campus-south">Campus South - 200 College Blvd</option>
-                            <option value="downtown">Downtown Hub - 50 Main Street</option>
-                            <option value="tech-park">Tech Park - 300 Innovation Dr</option>
+                            {{#deliveryLocations}}
+                            <option value="{{locationKey}}">{{locationName}}</option>
+                            {{/deliveryLocations}}
                         </select>
                     </div>
                     <div class="create-account-row-fields">

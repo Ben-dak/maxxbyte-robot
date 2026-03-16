@@ -268,14 +268,19 @@ function goToLoginScreen() {
     }, 'main');
 }
 
-function goToRegisterScreen() {
+async function goToRegisterScreen() {
     document.body.classList.add('on-login-page');
     document.body.classList.add('on-register-page');
     document.body.classList.remove('restaurant-view', 'on-menu-page');
     const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    
+    // Fetch delivery locations from database
+    const deliveryLocations = await fetchDeliveryLocations();
+    
     templateBuilder.build('create-account-screen', {
         logoUrl: config.assets.logo || '',
-        username: username
+        username: username,
+        deliveryLocations: deliveryLocations
     }, 'main');
 }
 
@@ -303,73 +308,43 @@ function handleOrderNow() {
     }
 }
 
-const PRESET_DELIVERY_LOCATIONS = {
-    'campus-north': {
-        address: '100 University Ave',
-        city: 'San Jose',
-        zip: '95112',
-        state: 'CA',
-        country: 'USA',
-        cardNumber: '4111 1111 1111 1111',
-        exp: '12/28',
-        cvv: '123',
-        billingAddress: '100 University Ave',
-        billingCity: 'San Jose',
-        billingZip: '95112',
-        billingState: 'CA',
-        billingCountry: 'USA'
-    },
-    'campus-south': {
-        address: '200 College Blvd',
-        city: 'San Jose',
-        zip: '95113',
-        state: 'CA',
-        country: 'USA',
-        cardNumber: '4222 2222 2222 2222',
-        exp: '06/27',
-        cvv: '456',
-        billingAddress: '200 College Blvd',
-        billingCity: 'San Jose',
-        billingZip: '95113',
-        billingState: 'CA',
-        billingCountry: 'USA'
-    },
-    'downtown': {
-        address: '50 Main Street',
-        city: 'San Jose',
-        zip: '95110',
-        state: 'CA',
-        country: 'USA',
-        cardNumber: '4333 3333 3333 3333',
-        exp: '09/26',
-        cvv: '789',
-        billingAddress: '50 Main Street',
-        billingCity: 'San Jose',
-        billingZip: '95110',
-        billingState: 'CA',
-        billingCountry: 'USA'
-    },
-    'tech-park': {
-        address: '300 Innovation Dr',
-        city: 'San Jose',
-        zip: '95134',
-        state: 'CA',
-        country: 'USA',
-        cardNumber: '4444 4444 4444 4444',
-        exp: '03/29',
-        cvv: '321',
-        billingAddress: '300 Innovation Dr',
-        billingCity: 'San Jose',
-        billingZip: '95134',
-        billingState: 'CA',
-        billingCountry: 'USA'
+// Delivery locations fetched from database API
+let deliveryLocationsCache = {};
+
+async function fetchDeliveryLocations() {
+    try {
+        const response = await axios.get(config.baseUrl + '/delivery-locations');
+        const locations = response.data;
+        // Convert array to object keyed by locationKey for easy lookup
+        deliveryLocationsCache = {};
+        locations.forEach(loc => {
+            deliveryLocationsCache[loc.locationKey] = {
+                address: loc.address,
+                city: loc.city,
+                zip: loc.zip,
+                state: loc.state,
+                country: loc.country,
+                cardNumber: loc.cardNumber,
+                exp: loc.cardExp,
+                cvv: loc.cardCvv,
+                billingAddress: loc.billingAddress,
+                billingCity: loc.billingCity,
+                billingZip: loc.billingZip,
+                billingState: loc.billingState,
+                billingCountry: loc.billingCountry
+            };
+        });
+        return locations;
+    } catch (error) {
+        console.error('Failed to fetch delivery locations:', error);
+        return [];
     }
-};
+}
 
 window.fillAddressFromSelection = function() {
     const select = document.getElementById('register-deliveryAddress');
     const locationKey = select?.value;
-    const location = PRESET_DELIVERY_LOCATIONS[locationKey];
+    const location = deliveryLocationsCache[locationKey];
     
     if (location) {
         document.getElementById('register-city').value = location.city;
@@ -637,6 +612,8 @@ function goToBitebotCheckoutScreen() {
     const tax = getOrderTax();
     const total = getOrderTotal();
     const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
+    const profile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : {};
+    const displayName = (profile.firstName && profile.firstName.trim()) ? profile.firstName.trim() : (username.includes('@') ? (username.split('@')[0].charAt(0).toUpperCase() + username.split('@')[0].slice(1).toLowerCase()) : username.split(/\s+/)[0] || 'Guest');
     const itemCount = bitebotOrder.items.reduce((sum, i) => sum + i.quantity, 0);
     const itemCountText = itemCount + ' ' + (itemCount === 1 ? 'Item' : 'Items');
     const getCheckoutData = (profile) => {
@@ -668,6 +645,7 @@ function goToBitebotCheckoutScreen() {
         return {
             logoUrl: config.assets.logo || '',
             username,
+            displayName,
             itemCount,
             itemCountText,
             orderItems,
@@ -1459,7 +1437,7 @@ function getLocationKeyFromAddress(address) {
 window.fillProfileAddressFromSelection = function() {
     const select = document.getElementById('profile-deliveryAddress');
     const locationKey = select?.value;
-    const location = PRESET_DELIVERY_LOCATIONS[locationKey];
+    const location = deliveryLocationsCache[locationKey];
 
     if (location) {
         document.getElementById('profile-city').value = location.city;
@@ -1491,7 +1469,7 @@ window.updateProfile = function() {
     }
     
     const locationKey = document.getElementById('profile-deliveryAddress')?.value;
-    const location = PRESET_DELIVERY_LOCATIONS[locationKey] || {};
+    const location = deliveryLocationsCache[locationKey] || {};
     
     const profileData = {
         firstName: firstName,

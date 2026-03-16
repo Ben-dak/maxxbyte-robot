@@ -47,7 +47,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) {
         web.ignoring()
                 .antMatchers(HttpMethod.OPTIONS, "/**")
-                .antMatchers("/", "/index.html", "/css/**", "/js/**", "/images/**", "/templates/**", "/*.ico");
+                .antMatchers("/", "/index.html", "/css/**", "/js/**", "/images/**", "/templates/**", "/*.ico")
+                .antMatchers("/delivery-locations", "/delivery-locations/**");
     }
 
     /**

@@ -1350,6 +1350,9 @@ body.restaurant-view {
     letter-spacing: 0.14em;
     color: var(--bitebot-red);
     margin: 0 0 1rem 0;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .menu-item-row {
@@ -1445,6 +1448,9 @@ body.restaurant-view {
     color: #555;
     margin: 0;
     line-height: 1.5;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .menu-item-card-saffron .menu-item-price {
