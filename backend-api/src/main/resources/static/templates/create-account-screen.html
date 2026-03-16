@@ -1,15 +1,12 @@
 <section class="screen create-account-screen">
-    <header class="bitebot-checkout-header">
+    <header class="bitebot-checkout-header create-account-header">
         <div class="bitebot-checkout-header-left">
-            <a href="#" class="bitebot-checkout-back" onclick="goToLoginScreen(); return false;">&lt; RETURN TO CART</a>
+            <a href="#" class="bitebot-checkout-back" onclick="loadHome(); return false;">&lt; RETURN HOME</a>
         </div>
         <div class="bitebot-checkout-header-center">
             <img class="bitebot-checkout-logo" src="{{logoUrl}}" alt="BiteBot">
         </div>
         <div class="bitebot-checkout-header-right">
-            <span class="bitebot-checkout-hello">Hello {{username}}!</span>
-            <a href="#" class="bitebot-checkout-signout" onclick="userService.logout(); return false;">SIGN OUT</a>
-            <i class="fa-solid fa-user bitebot-checkout-user-icon"></i>
         </div>
     </header>
 

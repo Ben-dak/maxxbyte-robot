@@ -103,6 +103,10 @@ function updateHeaderCartCount() {
 }
 
 function addToOrder(mealId) {
+    if (typeof userService !== 'undefined' && !userService.isLoggedIn()) {
+        showLoginForm();
+        return;
+    }
     const menuItem = bitebotMenu[mealId];
     if (!menuItem) return;
     const existing = bitebotOrder.items.find(i => i.id === menuItem.id);
@@ -249,6 +253,8 @@ function cartOverlayGoToCheckout() {
 }
 
 function goToLoginScreen() {
+    document.body.classList.add('on-login-page');
+    document.body.classList.remove('restaurant-view', 'on-menu-page', 'on-register-page');
     const loginImg = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
     const loginImgPng = config.assets.loginFoodPng || loginImg.replace(/\.jpg$/i, '.png');
     const fallbackImg = config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
@@ -262,6 +268,9 @@ function goToLoginScreen() {
 }
 
 function goToRegisterScreen() {
+    document.body.classList.add('on-login-page');
+    document.body.classList.add('on-register-page');
+    document.body.classList.remove('restaurant-view', 'on-menu-page');
     const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
     templateBuilder.build('create-account-screen', {
         logoUrl: config.assets.logo || '',
@@ -484,6 +493,8 @@ function loginAndGoToRestaurant() {
 function goToRestaurantsListScreen() {
     document.body.classList.remove('restaurant-view');
     document.body.classList.remove('on-menu-page');
+    document.body.classList.remove('on-login-page');
+    document.body.classList.remove('on-register-page');
     const cardImage = config.assets.loginFood || config.assets.homeHeroBackground || 'images/logo/homescreen-background.jpg';
     const data = {
         restaurantCardPizzaPalace: config.assets.restaurantCardPizzaPalace || cardImage,
@@ -544,9 +555,11 @@ function goToRestaurantScreen(restaurantId) {
     // Default to Saffron & Serrano if no ID provided
     restaurantId = restaurantId || 4;
     currentRestaurantId = restaurantId;
-    
+
     document.body.classList.add('restaurant-view');
     document.body.classList.add('on-menu-page');
+    document.body.classList.remove('on-login-page');
+    document.body.classList.remove('on-register-page');
     
     // Get restaurant info
     const restaurantMap = {

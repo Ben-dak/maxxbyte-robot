@@ -3,8 +3,9 @@
  * Routes are arrays of [percentY, percentX] over the map image (0–100).
  */
 const campusMap = (function () {
-    const RESTAURANT_WAIT_MS = 10 * 60 * 1000;  // 10 min at restaurant before leaving
-    const ROUTE_DURATION_MS = 10 * 60 * 1000;   // 10 min to reach destination
+    // TESTING MODE: 10 seconds per phase (change back to 10 * 60 * 1000 for production)
+    const RESTAURANT_WAIT_MS = 10 * 1000;  // 10 sec at restaurant before leaving
+    const ROUTE_DURATION_MS = 10 * 1000;   // 10 sec to reach destination
 
     // Demo route: points as [percentFromTop, percentFromLeft] (approximate path on campus map)
     const DEMO_ROUTE = [
@@ -25,6 +26,28 @@ const campusMap = (function () {
         return a + (b - a) * t;
     }
 
+    function formatTime(ms) {
+        if (ms <= 0) return '0:00';
+        const totalSeconds = Math.ceil(ms / 1000);
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        return minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+    }
+
+    function updateEtaTimer(phase, remainingMs) {
+        const etaContainer = document.getElementById('order-tracker-eta');
+        const etaCountdown = document.getElementById('eta-countdown');
+        if (!etaContainer || !etaCountdown) return;
+
+        if (phase === 'IN_TRANSIT' && remainingMs > 0) {
+            etaContainer.classList.add('visible');
+            etaCountdown.textContent = formatTime(remainingMs);
+        } else {
+            etaContainer.classList.remove('visible');
+            etaCountdown.textContent = '--:--';
+        }
+    }
+
     function setBlocked(blocked, blockedTime) {
         isBlocked = blocked;
         blockedAt = blockedTime || null;
@@ -36,6 +59,7 @@ const campusMap = (function () {
             if (robot) robot.classList.add('robot-blocked');
             if (blockedIndicator) blockedIndicator.classList.add('visible');
             updateStatusBar('BLOCKED');
+            updateEtaTimer('BLOCKED', 0);
         } else {
             if (robot) robot.classList.remove('robot-blocked');
             if (blockedIndicator) blockedIndicator.classList.remove('visible');
@@ -83,11 +107,13 @@ const campusMap = (function () {
             robot.style.transform = 'translate(-50%, -50%)';
             phase = 'PLACED';
             updateStatusBar(phase);
+            updateEtaTimer(phase, 0);
             return false; // not finished
         }
 
         const pathElapsed = elapsed - RESTAURANT_WAIT_MS;
         const progress = Math.min(pathElapsed / ROUTE_DURATION_MS, 1);
+        const remainingMs = ROUTE_DURATION_MS - pathElapsed;
 
         const pathLength = route.length - 1;
         const pathProgress = progress * pathLength;
@@ -106,10 +132,12 @@ const campusMap = (function () {
         if (progress >= 1) {
             phase = 'DELIVERED';
             updateStatusBar(phase);
+            updateEtaTimer(phase, 0);
             return true; // finished
         } else {
             phase = 'IN_TRANSIT';
             updateStatusBar(phase);
+            updateEtaTimer(phase, remainingMs);
             return false; // not finished
         }
     }
@@ -185,19 +213,24 @@ const campusMap = (function () {
             orderStartTime = bitebotOrder.statusScreenEnteredAt;
         }
 
-        // Immediately update status bar based on elapsed time (fixes visual sync issue)
+        // Immediately update status bar and ETA based on elapsed time (fixes visual sync issue)
         const elapsed = Date.now() - orderStartTime;
         if (isBlocked) {
             updateStatusBar('BLOCKED');
+            updateEtaTimer('BLOCKED', 0);
         } else if (elapsed < RESTAURANT_WAIT_MS) {
             updateStatusBar('PLACED');
+            updateEtaTimer('PLACED', 0);
         } else {
             const pathElapsed = elapsed - RESTAURANT_WAIT_MS;
             const progress = Math.min(pathElapsed / ROUTE_DURATION_MS, 1);
+            const remainingMs = ROUTE_DURATION_MS - pathElapsed;
             if (progress >= 1) {
                 updateStatusBar('DELIVERED');
+                updateEtaTimer('DELIVERED', 0);
             } else {
                 updateStatusBar('IN_TRANSIT');
+                updateEtaTimer('IN_TRANSIT', remainingMs);
             }
         }
 

@@ -31,13 +31,15 @@
 {{#loggedout}}
 <div id="links">
     <span class="header-links-default">
-        <a href="#" class="header-nav-link header-nav-order" onclick="loadHome(); return false;">ORDER NOW</a>
-        <a href="#" class="header-nav-link" onclick="loadHome(); return false;">RESTAURANTS</a>
+        <a href="#" class="header-nav-link header-nav-order" onclick="showLoginForm(); return false;">ORDER NOW</a>
+        <a href="#" class="header-nav-link" onclick="goToRestaurantsListScreen(); return false;">RESTAURANTS</a>
     </span>
     <span class="header-links-restaurant">
         <a href="#" class="header-nav-link" onclick="loadHome(); return false;">HOME</a>
         <a href="#" class="header-nav-link header-nav-menu" onclick="goToRestaurantScreen(); return false;">MENU</a>
-        <a href="#" class="header-nav-link header-nav-tracker" onclick="goToOrderStatusScreen(); return false;">TRACK ORDER</a>
+    </span>
+    <span class="header-links-login">
+        <a href="#" class="header-nav-link" onclick="loadHome(); return false;">&lt; RETURN HOME</a>
     </span>
 </div>
 <div class="header-center">

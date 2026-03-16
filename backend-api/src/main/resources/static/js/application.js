@@ -53,6 +53,8 @@ function loadHome()
 {
     document.body.classList.remove('restaurant-view');
     document.body.classList.remove('on-menu-page');
+    document.body.classList.remove('on-login-page');
+    document.body.classList.remove('on-register-page');
     const data = {
         image1: config.assets.homeImage1,
         image2: config.assets.homeImage2,
