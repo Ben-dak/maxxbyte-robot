@@ -63,7 +63,8 @@ let bitebotOrder = {
     orderId: null,
     status: 'PLACED',
     statusScreenEnteredAt: null,
-    lastOrderSnapshot: null
+    lastOrderSnapshot: null,
+    restaurantId: null
 };
 let statusLogoUpdaterIntervalId = null;
 
@@ -719,6 +720,7 @@ function editDeliveryFromCheckout() {
 
 function placeOrderFromCheckoutScreen() {
     bitebotOrder.orderError = null;
+    bitebotOrder.restaurantId = currentRestaurantId; // Store selected restaurant for map route
     const cardNumber = document.getElementById('cardNumber')?.value?.trim() || '';
     const getVal = id => document.getElementById(id)?.value?.trim() || '';
     bitebotOrder.deliveryAddress = {
@@ -944,6 +946,7 @@ function submitOrderInBackground() {
 }
 
 function placeOrderAndGoToStatus() {
+    bitebotOrder.restaurantId = currentRestaurantId; // Store selected restaurant for map route
     const total = getOrderTotal();
     const p = bitebotOrder.payment || {};
     const delivery = bitebotOrder.deliveryAddress;
@@ -1396,9 +1399,130 @@ window.cancelDelivery = function() {
         });
 };
 
+// Profile Screen Functions
+function goToProfileScreen() {
+    document.body.classList.add('on-profile-page');
+    document.body.classList.remove('restaurant-view', 'on-menu-page', 'on-login-page', 'on-register-page', 'on-delivered-page');
+    
+    // Fetch profile from backend
+    if (typeof profileService !== 'undefined') {
+        profileService.loadProfile()
+            .then(() => {
+                const profile = profileService.profile || {};
+                renderProfileScreen(profile);
+            })
+            .catch(() => {
+                renderProfileScreen({});
+            });
+    } else {
+        renderProfileScreen({});
+    }
+}
+
+function renderProfileScreen(profile) {
+    const locationKey = getLocationKeyFromAddress(profile.address || '');
+    const data = {
+        logoUrl: config.assets.logo || '',
+        firstName: profile.firstName || '',
+        lastName: profile.lastName || '',
+        email: userService.getUserName() || '',
+        city: profile.city || '',
+        zip: profile.zip || '',
+        state: profile.state || '',
+        country: profile.country || '',
+        cardNumber: profile.cardNumberLast4 ? '**** **** **** ' + profile.cardNumberLast4 : '',
+        exp: '',
+        cvv: '***',
+        billingAddress: profile.billingAddress || profile.address || '',
+        billingCity: profile.billingCity || profile.city || '',
+        billingZip: profile.billingZip || profile.zip || '',
+        billingState: profile.billingState || profile.state || '',
+        billingCountry: profile.billingCountry || profile.country || '',
+        isCampusNorth: locationKey === 'campus-north',
+        isCampusSouth: locationKey === 'campus-south',
+        isDowntown: locationKey === 'downtown',
+        isTechPark: locationKey === 'tech-park'
+    };
+    templateBuilder.build('profile-screen', data, 'main');
+}
+
+function getLocationKeyFromAddress(address) {
+    if (!address) return '';
+    address = address.toLowerCase();
+    if (address.includes('university')) return 'campus-north';
+    if (address.includes('college')) return 'campus-south';
+    if (address.includes('main')) return 'downtown';
+    if (address.includes('innovation')) return 'tech-park';
+    return '';
+}
+
+window.fillProfileAddressFromSelection = function() {
+    const select = document.getElementById('profile-deliveryAddress');
+    const locationKey = select?.value;
+    const location = PRESET_DELIVERY_LOCATIONS[locationKey];
+
+    if (location) {
+        document.getElementById('profile-city').value = location.city;
+        document.getElementById('profile-zip').value = location.zip;
+        document.getElementById('profile-state').value = location.state;
+        document.getElementById('profile-country').value = location.country;
+        document.getElementById('profile-cardNumber').value = location.cardNumber;
+        document.getElementById('profile-exp').value = location.exp;
+        document.getElementById('profile-cvv').value = location.cvv;
+        document.getElementById('profile-billingAddress').value = location.billingAddress;
+        document.getElementById('profile-billingCity').value = location.billingCity;
+        document.getElementById('profile-billingZip').value = location.billingZip;
+        document.getElementById('profile-billingState').value = location.billingState;
+        document.getElementById('profile-billingCountry').value = location.billingCountry;
+    }
+};
+
+window.updateProfile = function() {
+    const firstName = document.getElementById('profile-firstName')?.value?.trim();
+    const lastName = document.getElementById('profile-lastName')?.value?.trim();
+    const msgEl = document.getElementById('profile-message');
+    
+    if (!firstName || !lastName) {
+        if (msgEl) {
+            msgEl.textContent = 'First name and last name are required.';
+            msgEl.style.color = '#dc3545';
+        }
+        return;
+    }
+    
+    const locationKey = document.getElementById('profile-deliveryAddress')?.value;
+    const location = PRESET_DELIVERY_LOCATIONS[locationKey] || {};
+    
+    const profileData = {
+        firstName: firstName,
+        lastName: lastName,
+        address: location.address || '',
+        city: location.city || '',
+        state: location.state || '',
+        zip: location.zip || '',
+        country: location.country || ''
+    };
+    
+    axios.put(config.baseUrl + '/profile', profileData, { headers: userService.getHeaders() })
+        .then(() => {
+            if (msgEl) {
+                msgEl.textContent = 'Profile updated successfully!';
+                msgEl.style.color = '#28a745';
+            }
+        })
+        .catch(err => {
+            console.error('Profile update failed:', err);
+            if (msgEl) {
+                msgEl.textContent = 'Failed to update profile. Please try again.';
+                msgEl.style.color = '#dc3545';
+            }
+        });
+};
+
 if (typeof window !== 'undefined') {
     window.goToLoginScreen = goToLoginScreen;
     window.goToRegisterScreen = goToRegisterScreen;
+    window.goToProfileScreen = goToProfileScreen;
     window.startOrderOrLogin = startOrderOrLogin;
     window.deliveryOrLogin = deliveryOrLogin;
     window.registerAndGoToRestaurant = registerAndGoToRestaurant;

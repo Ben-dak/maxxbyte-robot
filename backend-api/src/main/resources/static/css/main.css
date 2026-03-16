@@ -1059,8 +1059,9 @@ body.on-login-page .header-signin-btn {
     display: none;
 }
 
-/* Hide main header on register page since it has its own header */
-body.on-register-page header {
+/* Hide main header on register/profile page since they have their own header */
+body.on-register-page header,
+body.on-profile-page header {
     display: none !important;
 }
 

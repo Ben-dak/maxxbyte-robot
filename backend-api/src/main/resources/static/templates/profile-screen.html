@@ -1,0 +1,78 @@
+<section class="screen profile-screen">
+    <header class="bitebot-checkout-header profile-header">
+        <div class="bitebot-checkout-header-left">
+            <a href="#" class="bitebot-checkout-back" onclick="loadHome(); return false;">&lt; RETURN HOME</a>
+        </div>
+        <div class="bitebot-checkout-header-center">
+            <img class="bitebot-checkout-logo" src="{{logoUrl}}" alt="BiteBot">
+        </div>
+        <div class="bitebot-checkout-header-right">
+        </div>
+    </header>
+
+    <div class="create-account-title-bar">
+        <h1 class="create-account-title">MY PROFILE</h1>
+    </div>
+
+    <div class="create-account-body">
+        <div class="create-account-columns">
+            <div class="create-account-panel create-account-profile-panel">
+                <h2 class="create-account-panel-title">PROFILE INFO <i class="fa-regular fa-user create-account-panel-icon"></i></h2>
+                <div class="create-account-fields">
+                    <div class="create-account-row-fields">
+                        <input type="text" id="profile-firstName" class="create-account-input" placeholder="First Name" value="{{firstName}}">
+                        <input type="text" id="profile-lastName" class="create-account-input" placeholder="Last Name" value="{{lastName}}">
+                    </div>
+                    <div class="create-account-field">
+                        <select id="profile-deliveryAddress" class="create-account-input create-account-select" onchange="fillProfileAddressFromSelection()">
+                            <option value="">-- Select Delivery Location --</option>
+                            <option value="campus-north" {{#isCampusNorth}}selected{{/isCampusNorth}}>Campus North - 100 University Ave</option>
+                            <option value="campus-south" {{#isCampusSouth}}selected{{/isCampusSouth}}>Campus South - 200 College Blvd</option>
+                            <option value="downtown" {{#isDowntown}}selected{{/isDowntown}}>Downtown Hub - 50 Main Street</option>
+                            <option value="tech-park" {{#isTechPark}}selected{{/isTechPark}}>Tech Park - 300 Innovation Dr</option>
+                        </select>
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="profile-city" class="create-account-input" placeholder="City" value="{{city}}" readonly>
+                        <input type="text" id="profile-zip" class="create-account-input create-account-input-zip" placeholder="Zip" value="{{zip}}" readonly>
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="profile-state" class="create-account-input" placeholder="State" value="{{state}}" readonly>
+                        <input type="text" id="profile-country" class="create-account-input" placeholder="Country" value="{{country}}" readonly>
+                    </div>
+                    <div class="create-account-field">
+                        <input type="text" id="profile-email" class="create-account-input" placeholder="Email Address" value="{{email}}" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="create-account-panel create-account-billing-panel">
+                <h2 class="create-account-panel-title">BILLING INFO <i class="fa-regular fa-credit-card create-account-panel-icon"></i></h2>
+                <div class="create-account-fields">
+                    <div class="create-account-field">
+                        <input type="text" id="profile-cardNumber" class="create-account-input" placeholder="Debit or Credit Card Number" value="{{cardNumber}}" maxlength="19" readonly>
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="profile-exp" class="create-account-input create-account-input-exp" placeholder="MM/YY" value="{{exp}}" maxlength="5" readonly>
+                        <input type="text" id="profile-cvv" class="create-account-input create-account-input-cvv" placeholder="CVV" value="{{cvv}}" maxlength="4" readonly>
+                    </div>
+                    <div class="create-account-field">
+                        <input type="text" id="profile-billingAddress" class="create-account-input" placeholder="Billing Address" value="{{billingAddress}}" readonly>
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="profile-billingCity" class="create-account-input" placeholder="Billing City" value="{{billingCity}}" readonly>
+                        <input type="text" id="profile-billingZip" class="create-account-input create-account-input-zip" placeholder="Billing Zip" value="{{billingZip}}" readonly>
+                    </div>
+                    <div class="create-account-row-fields">
+                        <input type="text" id="profile-billingState" class="create-account-input" placeholder="Billing State" value="{{billingState}}" readonly>
+                        <input type="text" id="profile-billingCountry" class="create-account-input" placeholder="Billing Country" value="{{billingCountry}}" readonly>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="create-account-actions">
+            <button type="button" class="btn create-account-submit-btn" onclick="updateProfile()">SAVE CHANGES</button>
+        </div>
+        <div id="profile-message" class="create-account-error"></div>
+    </div>
+</section>

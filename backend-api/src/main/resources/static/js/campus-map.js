@@ -7,16 +7,48 @@ const campusMap = (function () {
     const RESTAURANT_WAIT_MS = 10 * 60 * 1000;  // 10 min at restaurant before leaving
     const ROUTE_DURATION_MS = 10 * 60 * 1000;   // 10 min to reach destination
 
-    // Demo route: points as [percentFromTop, percentFromLeft] (approximate path on campus map)
-    const DEMO_ROUTE = [
-        [38, 22],  // start near restaurant area (left)
-        [42, 32],
-        [48, 42],
-        [52, 52],
-        [55, 62],
-        [58, 72],
-        [62, 82]   // end near dorm area (right)
-    ];
+    // Restaurant-specific routes: start from restaurant location, end at dorm area
+    const RESTAURANT_ROUTES = {
+        1: [ // Pizza Palace (top-left area)
+            [32, 18],  // start at Pizza Palace
+            [36, 28],
+            [42, 38],
+            [48, 50],
+            [54, 62],
+            [58, 72],
+            [62, 82]   // end at dorm area
+        ],
+        2: [ // Burger House (middle-left area)
+            [48, 20],  // start at Burger House
+            [48, 32],
+            [50, 44],
+            [52, 56],
+            [56, 68],
+            [60, 78],
+            [62, 82]   // end at dorm area
+        ],
+        3: [ // Sushi World (bottom-left area)
+            [58, 15],  // start at Sushi World
+            [56, 28],
+            [54, 42],
+            [54, 54],
+            [56, 66],
+            [60, 76],
+            [62, 82]   // end at dorm area
+        ],
+        4: [ // Saffron & Serrano (center-left area) - default
+            [38, 22],  // start at Saffron & Serrano
+            [42, 32],
+            [48, 42],
+            [52, 52],
+            [55, 62],
+            [58, 72],
+            [62, 82]   // end at dorm area
+        ]
+    };
+
+    // Fallback route
+    const DEMO_ROUTE = RESTAURANT_ROUTES[4];
 
     let animationId = null;
     let isBlocked = false;
@@ -247,7 +279,14 @@ let deliveredScreenShown = false;
             }
         }
 
-        const route = DEMO_ROUTE;
+        // Get route based on selected restaurant
+        let restaurantId = 4; // default
+        if (typeof currentRestaurantId !== 'undefined') {
+            restaurantId = currentRestaurantId;
+        } else if (typeof bitebotOrder !== 'undefined' && bitebotOrder.restaurantId) {
+            restaurantId = bitebotOrder.restaurantId;
+        }
+        const route = RESTAURANT_ROUTES[restaurantId] || DEMO_ROUTE;
 
         const img = frame.querySelector('.order-tracker-map-image');
         if (img && img.complete) {
