@@ -7,9 +7,9 @@
             <img class="bitebot-checkout-logo" src="{{logoUrl}}" alt="BiteBot">
         </div>
         <div class="bitebot-checkout-header-right">
-            <span class="bitebot-checkout-hello">Hello {{displayName}}!</span>
+            <span class="bitebot-checkout-hello">Welcome {{displayName}}</span>
             <a href="#" class="bitebot-checkout-signout" onclick="userService.logout(); return false;">SIGN OUT</a>
-            <i class="fa-solid fa-user bitebot-checkout-user-icon"></i>
+            <i class="fa-solid fa-user bitebot-checkout-user-icon" onclick="goToProfileScreen()" style="cursor: pointer;"></i>
         </div>
     </header>
 
@@ -22,32 +22,33 @@
             <div class="bitebot-checkout-left">
                 <div class="bitebot-checkout-block bitebot-checkout-card-block">
                     <h2 class="bitebot-checkout-block-title">DEBIT OR CREDIT CARD <i class="fa-regular fa-credit-card bitebot-checkout-card-icon"></i></h2>
+                    <p class="bitebot-checkout-customer-name">{{customerFirstName}} {{customerLastName}}</p>
                     <div class="bitebot-checkout-field">
+                        <label class="bitebot-checkout-label">Card Number</label>
                         <input type="text" id="cardNumber" class="bitebot-checkout-input" placeholder="Debit or Credit Card Number" value="{{cardNumberDisplay}}" maxlength="19">
                     </div>
                     <div class="bitebot-checkout-row-fields">
-                        <input type="text" id="expMonth" class="bitebot-checkout-input bitebot-checkout-input-mm" placeholder="MM" value="{{expMonth}}" maxlength="2">
-                        <input type="text" id="expYear" class="bitebot-checkout-input bitebot-checkout-input-yy" placeholder="YY" value="{{expYear}}" maxlength="2">
-                        <input type="text" id="cardCvv" class="bitebot-checkout-input bitebot-checkout-input-cw" placeholder="CW" maxlength="4">
+                        <div class="bitebot-checkout-field-labeled">
+                            <label class="bitebot-checkout-label">Expiration</label>
+                            <div class="bitebot-checkout-exp-fields">
+                                <input type="text" id="expMonth" class="bitebot-checkout-input bitebot-checkout-input-mm" placeholder="MM" value="{{expMonth}}" maxlength="2">
+                                <input type="text" id="expYear" class="bitebot-checkout-input bitebot-checkout-input-yy" placeholder="YY" value="{{expYear}}" maxlength="2">
+                            </div>
+                        </div>
+                        <div class="bitebot-checkout-field-labeled">
+                            <label class="bitebot-checkout-label">CVV</label>
+                            <input type="text" id="cardCvv" class="bitebot-checkout-input bitebot-checkout-input-cvv" placeholder="CVV" maxlength="4">
+                        </div>
                     </div>
                     <div class="bitebot-checkout-field">
+                        <label class="bitebot-checkout-label">Billing ZIP Code</label>
                         <input type="text" id="billingZip" class="bitebot-checkout-input" placeholder="Billing ZIP Code" value="{{billingZip}}">
-                    </div>
-
-                    <h3 class="bitebot-checkout-delivery-heading">Delivery address</h3>
-                    <div class="bitebot-checkout-field">
-                        <input type="text" id="deliveryAddress" class="bitebot-checkout-input" placeholder="Street address" value="{{deliveryLine1}}">
-                    </div>
-                    <div class="bitebot-checkout-row-fields">
-                        <input type="text" id="deliveryCity" class="bitebot-checkout-input" placeholder="City" value="{{deliveryCity}}">
-                        <input type="text" id="deliveryState" class="bitebot-checkout-input bitebot-checkout-input-state" placeholder="State" value="{{deliveryState}}">
-                        <input type="text" id="deliveryZip" class="bitebot-checkout-input bitebot-checkout-input-zip" placeholder="ZIP" value="{{deliveryZip}}">
                     </div>
                 </div>
 
                 <div class="bitebot-checkout-block bitebot-checkout-delivery-block">
-                    <h2 class="bitebot-checkout-block-title">DELIVERY TO <button type="button" class="bitebot-checkout-edit-btn" onclick="editDeliveryFromCheckout(); return false;" title="Edit address"><i class="fa-solid fa-pen"></i></button></h2>
-                    <p class="bitebot-checkout-address-line1" id="checkout-delivery-line1">{{deliveryLine1}}</p>
+                    <h2 class="bitebot-checkout-block-title">DELIVER TO <button type="button" class="bitebot-checkout-edit-btn" onclick="editDeliveryFromCheckout(); return false;" title="Edit address"><i class="fa-solid fa-pen"></i></button></h2>
+                    <p class="bitebot-checkout-customer-name">{{customerFirstName}} {{customerLastName}}</p>
                     <p class="bitebot-checkout-address-line2" id="checkout-delivery-line2">{{deliveryLine2}}</p>
                     <div class="bitebot-checkout-delivery-options">
                         <span class="bitebot-checkout-delivery-opt"><i class="fa-solid fa-hand-holding"></i> Hand it to me</span>

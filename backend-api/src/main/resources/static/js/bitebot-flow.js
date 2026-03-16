@@ -646,6 +646,8 @@ function goToBitebotCheckoutScreen() {
             logoUrl: config.assets.logo || '',
             username,
             displayName,
+            customerFirstName: p.firstName || displayName,
+            customerLastName: p.lastName || '',
             itemCount,
             itemCountText,
             orderItems,
@@ -1162,6 +1164,7 @@ function startStatusLogoUpdater() {
 
 function goToOrderStatusScreen() {
     document.body.classList.remove('on-menu-page');
+    document.body.classList.add('on-order-page');
     
     if (bitebotOrder.orderId && typeof ordersService !== 'undefined') {
         ordersService.getOrderById(bitebotOrder.orderId)
@@ -1378,10 +1381,13 @@ window.cancelDelivery = function() {
 };
 
 // Profile Screen Functions
-function goToProfileScreen() {
+async function goToProfileScreen() {
     document.body.classList.add('on-profile-page');
-    document.body.classList.remove('restaurant-view', 'on-menu-page', 'on-login-page', 'on-register-page', 'on-delivered-page');
-    
+    document.body.classList.remove('restaurant-view', 'on-menu-page', 'on-login-page', 'on-register-page', 'on-delivered-page', 'on-order-page');
+
+    // Fetch delivery locations for dropdown
+    await fetchDeliveryLocations();
+
     // Fetch profile from backend
     if (typeof profileService !== 'undefined') {
         profileService.loadProfile()
@@ -1399,6 +1405,14 @@ function goToProfileScreen() {
 
 function renderProfileScreen(profile) {
     const locationKey = getLocationKeyFromAddress(profile.address || '');
+    const deliveryLocations = Object.keys(deliveryLocationsCache).map(key => {
+        const loc = deliveryLocationsCache[key];
+        return {
+            key: key,
+            name: loc.locationName + ' - ' + loc.address,
+            selected: locationKey === key
+        };
+    });
     const data = {
         logoUrl: config.assets.logo || '',
         firstName: profile.firstName || '',
@@ -1416,10 +1430,7 @@ function renderProfileScreen(profile) {
         billingZip: profile.billingZip || profile.zip || '',
         billingState: profile.billingState || profile.state || '',
         billingCountry: profile.billingCountry || profile.country || '',
-        isCampusNorth: locationKey === 'campus-north',
-        isCampusSouth: locationKey === 'campus-south',
-        isDowntown: locationKey === 'downtown',
-        isTechPark: locationKey === 'tech-park'
+        deliveryLocations: deliveryLocations
     };
     templateBuilder.build('profile-screen', data, 'main');
 }

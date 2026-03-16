@@ -1059,9 +1059,27 @@ body.on-login-page .header-signin-btn {
     display: none;
 }
 
-/* Hide main header on register/profile page since they have their own header */
-body.on-register-page header,
-body.on-profile-page header {
+/* Hide main header on register page since it has its own header */
+body.on-register-page header#header-container {
+    display: none !important;
+}
+
+/* Profile page - show only RETURN HOME */
+.header-links-profile {
+    display: none;
+    gap: 24px;
+    align-items: center;
+}
+body.on-profile-page .header-links-default,
+body.on-profile-page .header-links-restaurant,
+body.on-profile-page .header-links-order,
+body.on-profile-page .header-links-delivered {
+    display: none !important;
+}
+body.on-profile-page .header-links-profile {
+    display: flex;
+}
+body.on-profile-page .profile-header {
     display: none !important;
 }
 
@@ -1072,10 +1090,26 @@ body.on-profile-page header {
     align-items: center;
 }
 body.on-delivered-page .header-links-default,
-body.on-delivered-page .header-links-restaurant {
+body.on-delivered-page .header-links-restaurant,
+body.on-delivered-page .header-links-order {
     display: none !important;
 }
 body.on-delivered-page .header-links-delivered {
+    display: flex;
+}
+
+/* Order page - show only HOME */
+.header-links-order {
+    display: none;
+    gap: 24px;
+    align-items: center;
+}
+body.on-order-page .header-links-default,
+body.on-order-page .header-links-restaurant,
+body.on-order-page .header-links-delivered {
+    display: none !important;
+}
+body.on-order-page .header-links-order {
     display: flex;
 }
 
@@ -2893,6 +2927,36 @@ body:has(.bitebot-checkout-screen) {
 
 .bitebot-checkout-field:last-of-type {
     margin-bottom: 0;
+}
+
+.bitebot-checkout-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.25rem;
+}
+
+.bitebot-checkout-field-labeled {
+    display: flex;
+    flex-direction: column;
+}
+
+.bitebot-checkout-exp-fields {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.bitebot-checkout-customer-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: #333;
+    margin: 0 0 0.75rem 0;
+}
+
+.bitebot-checkout-input-cvv {
+    width: 80px;
 }
 
 .bitebot-checkout-input {

@@ -56,6 +56,7 @@ function loadHome()
     document.body.classList.remove('on-login-page');
     document.body.classList.remove('on-register-page');
     document.body.classList.remove('on-delivered-page');
+    document.body.classList.remove('on-order-page');
     document.body.classList.remove('on-profile-page');
     const data = {
         image1: config.assets.homeImage1,
@@ -224,6 +225,7 @@ function closeError(control)
 document.addEventListener('DOMContentLoaded', () => {
     // Clear any lingering page state classes on fresh load
     document.body.classList.remove('on-delivered-page');
+    document.body.classList.remove('on-order-page');
     document.body.classList.remove('has-active-order');
     document.body.classList.remove('restaurant-view');
     document.body.classList.remove('on-menu-page');
