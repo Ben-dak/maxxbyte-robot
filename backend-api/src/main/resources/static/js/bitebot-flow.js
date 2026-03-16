@@ -1302,42 +1302,97 @@ window.clearObstacle = function() {
         });
 };
 
+// BiteBot Custom Modal Functions
+window.bitebotModal = {
+    show: function(message, options) {
+        options = options || {};
+        const backdrop = document.getElementById('bitebot-modal-backdrop');
+        const modal = document.getElementById('bitebot-modal');
+        const msgEl = document.getElementById('bitebot-modal-message');
+        const footer = document.getElementById('bitebot-modal-footer');
+        
+        if (!backdrop || !modal || !msgEl || !footer) return Promise.resolve(false);
+        
+        msgEl.textContent = message;
+        footer.innerHTML = '';
+        
+        return new Promise(resolve => {
+            if (options.type === 'confirm') {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.className = 'bitebot-modal-btn bitebot-modal-btn-secondary';
+                cancelBtn.textContent = options.cancelText || 'Cancel';
+                cancelBtn.onclick = () => { this.hide(); resolve(false); };
+                
+                const okBtn = document.createElement('button');
+                okBtn.className = 'bitebot-modal-btn bitebot-modal-btn-primary';
+                okBtn.textContent = options.okText || 'OK';
+                okBtn.onclick = () => { this.hide(); resolve(true); };
+                
+                footer.appendChild(cancelBtn);
+                footer.appendChild(okBtn);
+            } else {
+                const okBtn = document.createElement('button');
+                okBtn.className = 'bitebot-modal-btn bitebot-modal-btn-primary';
+                okBtn.textContent = options.okText || 'OK';
+                okBtn.onclick = () => { this.hide(); resolve(true); };
+                footer.appendChild(okBtn);
+            }
+            
+            backdrop.classList.remove('bitebot-modal--hidden');
+            modal.classList.remove('bitebot-modal--hidden');
+        });
+    },
+    hide: function() {
+        const backdrop = document.getElementById('bitebot-modal-backdrop');
+        const modal = document.getElementById('bitebot-modal');
+        if (backdrop) backdrop.classList.add('bitebot-modal--hidden');
+        if (modal) modal.classList.add('bitebot-modal--hidden');
+    },
+    alert: function(message, okText) {
+        return this.show(message, { type: 'alert', okText: okText });
+    },
+    confirm: function(message, okText, cancelText) {
+        return this.show(message, { type: 'confirm', okText: okText, cancelText: cancelText });
+    }
+};
+
 // TC-012: Cancel Order / Manual Abort
 window.cancelDelivery = function() {
     if (!bitebotOrder.orderId) {
-        alert('No active order to cancel.');
+        bitebotModal.alert('No active order to cancel.');
         return;
     }
 
     // Confirm with user before cancelling
-    if (!confirm('Are you sure you want to cancel this order?')) {
-        return;
-    }
-
-    const url = `${config.baseUrl}/deliveries/order/${bitebotOrder.orderId}/abort`;
-    axios.post(url, {}, { headers: userService.getHeaders() })
-        .then(response => {
-            console.log('Order cancelled:', response.data);
-            bitebotOrder.status = 'CANCELLED';
-            bitebotOrder.orderId = null;
+    bitebotModal.confirm('Are you sure you want to cancel this order?', 'Yes, Cancel', 'No, Keep Order')
+        .then(confirmed => {
+            if (!confirmed) return;
             
-            // Clear the cart and reset count
-            bitebotOrder.items = [];
-            updateHeaderCartCount();
-            
-            document.body.classList.remove('has-active-order');
+            const url = `${config.baseUrl}/deliveries/order/${bitebotOrder.orderId}/abort`;
+            axios.post(url, {}, { headers: userService.getHeaders() })
+                .then(response => {
+                    console.log('Order cancelled:', response.data);
+                    bitebotOrder.status = 'CANCELLED';
+                    bitebotOrder.orderId = null;
+                    
+                    // Clear the cart and reset count
+                    bitebotOrder.items = [];
+                    updateHeaderCartCount();
+                    
+                    document.body.classList.remove('has-active-order');
 
-            // Show cancellation confirmation
-            alert('Your order has been cancelled.');
-
-            // Return to home
-            if (typeof loadHome === 'function') {
-                loadHome();
-            }
-        })
-        .catch(err => {
-            console.error('Cancel order failed:', err.response?.data || err.message);
-            alert('Unable to cancel order. Please contact support.');
+                    // Show cancellation confirmation
+                    bitebotModal.alert('Your order has been cancelled.').then(() => {
+                        // Return to home
+                        if (typeof loadHome === 'function') {
+                            loadHome();
+                        }
+                    });
+                })
+                .catch(err => {
+                    console.error('Cancel order failed:', err.response?.data || err.message);
+                    bitebotModal.alert('Unable to cancel order. Please contact support.');
+                });
         });
 };
 

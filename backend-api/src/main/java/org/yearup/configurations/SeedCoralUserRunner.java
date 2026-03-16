@@ -12,7 +12,11 @@ import org.yearup.models.Profile;
 import org.yearup.models.User;
 
 /**
- * Creates the default user coralestrada28 / BiteBot4life on startup if it does not exist.
+ * Creates a demo user on startup for testing purposes.
+ * Username: coralestrada28 / Password: BiteBot4life
+ * 
+ * NOTE: For production, consider disabling this by removing @Component
+ * or adding @Profile("dev") annotation.
  */
 @Component
 @Order(1)

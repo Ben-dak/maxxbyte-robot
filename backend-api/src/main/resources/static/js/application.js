@@ -221,6 +221,22 @@ function closeError(control)
    PAGE LOAD INITIALIZATION
    =========================== */
 document.addEventListener('DOMContentLoaded', () => {
+    // Clear any lingering page state classes on fresh load
+    document.body.classList.remove('on-delivered-page');
+    document.body.classList.remove('has-active-order');
+    document.body.classList.remove('restaurant-view');
+    document.body.classList.remove('on-menu-page');
+    document.body.classList.remove('on-login-page');
+    document.body.classList.remove('on-register-page');
+    
+    // Reset bitebotOrder state if it exists (prevents stale delivered state)
+    if (typeof bitebotOrder !== 'undefined') {
+        bitebotOrder.orderId = null;
+        bitebotOrder.status = 'PLACED';
+        bitebotOrder.statusScreenEnteredAt = null;
+        bitebotOrder.items = [];
+    }
+    
     // If already logged in, show restaurants list; otherwise show home
     if (typeof userService !== 'undefined' && userService.isLoggedIn() && typeof goToRestaurantsListScreen === 'function') {
         goToRestaurantsListScreen();
