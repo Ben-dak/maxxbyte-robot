@@ -54,7 +54,7 @@
                 </div>
 
                 <div class="order-tracker-progress">
-                    <div class="order-tracker-step {{step1Class}}"><span>ORDER PLACED</span></div>
+                    <div class="order-tracker-step {{step1Class}}"><span>PREPARING ORDER</span></div>
                     <div class="order-tracker-step {{step2Class}}"><span>IN TRANSIT</span></div>
                     <div class="order-tracker-step {{step3Class}}"><span>DELIVERED</span></div>
                 </div>
@@ -67,10 +67,12 @@
                         <img src="{{campusMapUrl}}" alt="Campus delivery map" class="order-tracker-map-image">
                         <div class="order-tracker-map-robot" aria-hidden="true">🤖</div>
                         <div class="order-tracker-blocked-indicator">⚠️ OBSTACLE DETECTED</div>
-                        <div class="order-tracker-eta" id="order-tracker-eta">
-                            <span class="eta-label">ETA:</span>
-                            <span class="eta-time" id="eta-countdown">--:--</span>
-                        </div>
+                    </div>
+                    <div class="order-tracker-eta" id="order-tracker-eta">
+                        <span class="eta-message eta-message-prep">Your order is being prepared!</span>
+                        <span class="eta-message eta-message-transit">Your order is on it's way!</span>
+                        <span class="eta-label">ETA</span>
+                        <span class="eta-time" id="eta-countdown">--:--</span>
                     </div>
                 </div>
                 

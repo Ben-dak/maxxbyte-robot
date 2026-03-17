@@ -18,10 +18,10 @@ import java.util.Set;
 @Service
 public class DeliverySchedulerService {
 
-    // TESTING: 10 seconds per phase (change to MINUTES and 10 for production)
-    private static final long PREP_TIME_SECONDS = 10;
-    private static final long DELIVERY_TIME_SECONDS = 10;
-    private static final long BLOCKED_AUTO_RECOVERY_SECONDS = 10;
+    // PRODUCTION: 10 minutes prep + 10 minutes delivery = 20 minutes total (per project SLA)
+    private static final long PREP_TIME_MINUTES = 10;
+    private static final long DELIVERY_TIME_MINUTES = 10;
+    private static final long BLOCKED_AUTO_RECOVERY_MINUTES = 2;
 
     private final DeliveryDao deliveryDao;
     private final OrderDao orderDao;
@@ -36,8 +36,8 @@ public class DeliverySchedulerService {
         this.loggingService = loggingService;
     }
 
-    // TESTING: Run every 5 seconds (change to 60000 for production)
-    @Scheduled(fixedRate = 5000)
+    // PRODUCTION: Run every 60 seconds
+    @Scheduled(fixedRate = 60000)
     public void processDeliveryStatusTransitions() {
         // Track deliveries transitioned in this cycle to prevent double-processing
         Set<Integer> justTransitioned = new HashSet<>();
@@ -57,9 +57,9 @@ public class DeliverySchedulerService {
                 continue;
             }
 
-            long secondsElapsed = ChronoUnit.SECONDS.between(order.getCreatedAt(), now);
+            long minutesElapsed = ChronoUnit.MINUTES.between(order.getCreatedAt(), now);
 
-            if (secondsElapsed >= PREP_TIME_SECONDS) {
+            if (minutesElapsed >= PREP_TIME_MINUTES) {
                 Robot availableRobot = findAvailableRobot();
                 if (availableRobot != null) {
                     deliveryDao.assignRobot(delivery.getDeliveryId(), availableRobot.getRobotId());
@@ -91,9 +91,9 @@ public class DeliverySchedulerService {
                 continue;
             }
 
-            long secondsBlocked = ChronoUnit.SECONDS.between(delivery.getBlockedAt(), now);
+            long minutesBlocked = ChronoUnit.MINUTES.between(delivery.getBlockedAt(), now);
 
-            if (secondsBlocked >= BLOCKED_AUTO_RECOVERY_SECONDS) {
+            if (minutesBlocked >= BLOCKED_AUTO_RECOVERY_MINUTES) {
                 deliveryDao.updateStatus(delivery.getDeliveryId(), "IN_TRANSIT");
                 deliveryDao.updateBlockedAt(delivery.getDeliveryId(), null);
                 delivery.setStatus("IN_TRANSIT");
@@ -104,7 +104,7 @@ public class DeliverySchedulerService {
                 // Mark as just transitioned
                 justTransitioned.add(delivery.getDeliveryId());
 
-                loggingService.logDeliveryEvent(delivery, "Obstacle auto-cleared after " + secondsBlocked + " seconds");
+                loggingService.logDeliveryEvent(delivery, "Obstacle auto-cleared after " + minutesBlocked + " minutes");
                 System.out.println("Delivery #" + delivery.getDeliveryId() + " auto-recovered from BLOCKED to IN_TRANSIT");
             }
         }
@@ -125,10 +125,10 @@ public class DeliverySchedulerService {
                 continue;
             }
 
-            long secondsInTransit = ChronoUnit.SECONDS.between(delivery.getStartedAt(), now);
+            long minutesInTransit = ChronoUnit.MINUTES.between(delivery.getStartedAt(), now);
 
             // Only transition to DELIVERED after being IN_TRANSIT for required time
-            if (secondsInTransit >= DELIVERY_TIME_SECONDS) {
+            if (minutesInTransit >= DELIVERY_TIME_MINUTES) {
                 deliveryDao.updateStatus(delivery.getDeliveryId(), "DELIVERED");
                 deliveryDao.updateCompletedAt(delivery.getDeliveryId(), now);
                 delivery.setStatus("DELIVERED");
@@ -136,7 +136,7 @@ public class DeliverySchedulerService {
 
                 orderDao.updateStatus(delivery.getOrderId(), "DELIVERED");
 
-                loggingService.logDeliveryEvent(delivery, "Delivery completed - DELIVERED after " + secondsInTransit + " seconds in transit");
+                loggingService.logDeliveryEvent(delivery, "Delivery completed - DELIVERED after " + minutesInTransit + " minutes in transit");
                 System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to DELIVERED");
             }
         }

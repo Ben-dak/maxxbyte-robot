@@ -3,9 +3,9 @@
  * Routes are arrays of [percentY, percentX] over the map image (0–100).
  */
 const campusMap = (function () {
-    // TESTING: 10 seconds per phase (change to 10 * 60 * 1000 for production)
-    const RESTAURANT_WAIT_MS = 10 * 1000;  // 10 sec at restaurant before leaving
-    const ROUTE_DURATION_MS = 10 * 1000;   // 10 sec to reach destination
+    // PRODUCTION: 10 minutes per phase (20 minutes total per SLA)
+    const RESTAURANT_WAIT_MS = 10 * 60 * 1000;  // 10 min at restaurant (prep time)
+    const ROUTE_DURATION_MS = 10 * 60 * 1000;   // 10 min to reach destination (transit time)
 
     // Restaurant-specific routes: start from restaurant location, end at dorm area
     const RESTAURANT_ROUTES = {
@@ -71,8 +71,16 @@ const campusMap = (function () {
         const etaCountdown = document.getElementById('eta-countdown');
         if (!etaContainer || !etaCountdown) return;
 
-        if (phase === 'IN_TRANSIT' && remainingMs > 0) {
-            etaContainer.classList.add('visible');
+        // Remove all phase classes first
+        etaContainer.classList.remove('phase-prep', 'phase-transit');
+
+        if (phase === 'PLACED' && remainingMs > 0) {
+            // Prep phase: "Your order is being prepared!"
+            etaContainer.classList.add('visible', 'phase-prep');
+            etaCountdown.textContent = formatTime(remainingMs);
+        } else if (phase === 'IN_TRANSIT' && remainingMs > 0) {
+            // Transit phase: "Your order is on it's way!"
+            etaContainer.classList.add('visible', 'phase-transit');
             etaCountdown.textContent = formatTime(remainingMs);
         } else {
             etaContainer.classList.remove('visible');
@@ -116,16 +124,15 @@ const campusMap = (function () {
         if (phase === 'PLACED') {
             steps[0].classList.add('active');
         } else if (phase === 'IN_TRANSIT') {
-            steps[0].classList.add('active');
+            steps[0].classList.add('done');
             steps[1].classList.add('active');
         } else if (phase === 'BLOCKED') {
-            steps[0].classList.add('active');
-            steps[1].classList.add('active');
-            steps[1].classList.add('blocked');
+            steps[0].classList.add('done');
+            steps[1].classList.add('active', 'blocked');
             if (statusBar) statusBar.classList.add('status-blocked');
         } else if (phase === 'DELIVERED') {
-            steps[0].classList.add('active');
-            steps[1].classList.add('active');
+            steps[0].classList.add('done');
+            steps[1].classList.add('done');
             steps[2].classList.add('active');
         }
     }
@@ -138,8 +145,9 @@ const campusMap = (function () {
             robot.style.left = route[0][1] + '%';
             robot.style.transform = 'translate(-50%, -50%)';
             phase = 'PLACED';
+            const prepRemainingMs = RESTAURANT_WAIT_MS - elapsed;
             updateStatusBar(phase);
-            updateEtaTimer(phase, 0);
+            updateEtaTimer(phase, prepRemainingMs);
             return false; // not finished
         }
 
@@ -264,8 +272,9 @@ let deliveredScreenShown = false;
             updateStatusBar('BLOCKED');
             updateEtaTimer('BLOCKED', 0);
         } else if (elapsed < RESTAURANT_WAIT_MS) {
+            const prepRemainingMs = RESTAURANT_WAIT_MS - elapsed;
             updateStatusBar('PLACED');
-            updateEtaTimer('PLACED', 0);
+            updateEtaTimer('PLACED', prepRemainingMs);
         } else {
             const pathElapsed = elapsed - RESTAURANT_WAIT_MS;
             const progress = Math.min(pathElapsed / ROUTE_DURATION_MS, 1);
