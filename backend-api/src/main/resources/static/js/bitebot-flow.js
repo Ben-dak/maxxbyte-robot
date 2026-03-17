@@ -702,14 +702,11 @@ function placeOrderFromCheckoutScreen() {
     bitebotOrder.orderError = null;
     bitebotOrder.restaurantId = currentRestaurantId; // Store selected restaurant for map route
     const cardNumber = document.getElementById('cardNumber')?.value?.trim() || '';
-    const getVal = id => document.getElementById(id)?.value?.trim() || '';
-    bitebotOrder.deliveryAddress = {
-        address: getVal('deliveryAddress'),
-        city: getVal('deliveryCity'),
-        state: getVal('deliveryState'),
-        zip: getVal('deliveryZip')
-    };
-    const delivery = bitebotOrder.deliveryAddress;
+    
+    // Use the delivery address that was already set in goToBitebotCheckoutScreen()
+    // (Don't try to read from form fields that no longer exist)
+    const delivery = bitebotOrder.deliveryAddress || {};
+    
     const payment = {
         nameOnCard: '',
         cardNumber: cardNumber,
