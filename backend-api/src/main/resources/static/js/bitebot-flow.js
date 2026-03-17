@@ -990,7 +990,7 @@ function placeOrderAndGoToStatus() {
 function getOrderStatusTemplateData() {
     const status = bitebotOrder.status || 'PLACED';
     const steps = { step1Class: '', step2Class: '', step3Class: '', connector1Class: '', connector2Class: '', isBlocked: false };
-    if (status === 'PLACED' || status === 'PENDING_ASSIGNMENT') {
+    if (status === 'PLACED' || status === 'PENDING_ASSIGNMENT' || status === 'PREPPING_ORDER') {
         steps.step1Class = 'active';
         steps.connector1Class = 'pending';
         steps.connector2Class = 'pending';
@@ -1279,7 +1279,7 @@ window.clearObstacle = function() {
             if (typeof campusMap !== 'undefined' && campusMap.setBlocked) {
                 campusMap.setBlocked(false);
             }
-            bitebotOrder.status = 'EN_ROUTE';
+            bitebotOrder.status = 'IN_TRANSIT';
         })
         .catch(err => {
             console.error('Failed to clear obstacle:', err.response?.data || err.message);

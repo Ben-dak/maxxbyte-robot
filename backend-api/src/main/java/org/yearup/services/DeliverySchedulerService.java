@@ -11,12 +11,14 @@ import org.yearup.models.Robot;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class DeliverySchedulerService {
 
-    // TESTING: 10 seconds per phase (change to 10 for production minutes)
+    // TESTING: 10 seconds per phase (change to MINUTES and 10 for production)
     private static final long PREP_TIME_SECONDS = 10;
     private static final long DELIVERY_TIME_SECONDS = 10;
     private static final long BLOCKED_AUTO_RECOVERY_SECONDS = 10;
@@ -37,16 +39,19 @@ public class DeliverySchedulerService {
     // TESTING: Run every 5 seconds (change to 60000 for production)
     @Scheduled(fixedRate = 5000)
     public void processDeliveryStatusTransitions() {
-        processEnRouteTransitions();
-        processBlockedRecovery();
-        processDeliveredTransitions();
+        // Track deliveries transitioned in this cycle to prevent double-processing
+        Set<Integer> justTransitioned = new HashSet<>();
+        
+        processInTransitTransitions(justTransitioned);
+        processBlockedRecovery(justTransitioned);
+        processDeliveredTransitions(justTransitioned);
     }
 
-    private void processEnRouteTransitions() {
-        List<Delivery> pendingDeliveries = deliveryDao.getByStatus("PENDING_ASSIGNMENT");
+    private void processInTransitTransitions(Set<Integer> justTransitioned) {
+        List<Delivery> preppingDeliveries = deliveryDao.getByStatus("PREPPING_ORDER");
         LocalDateTime now = LocalDateTime.now();
 
-        for (Delivery delivery : pendingDeliveries) {
+        for (Delivery delivery : preppingDeliveries) {
             Order order = orderDao.getById(delivery.getOrderId());
             if (order == null || order.getCreatedAt() == null) {
                 continue;
@@ -61,20 +66,23 @@ public class DeliverySchedulerService {
                     delivery.setRobotId(availableRobot.getRobotId());
                 }
 
-                deliveryDao.updateStatus(delivery.getDeliveryId(), "EN_ROUTE");
+                deliveryDao.updateStatus(delivery.getDeliveryId(), "IN_TRANSIT");
                 deliveryDao.updateStartedAt(delivery.getDeliveryId(), now);
-                delivery.setStatus("EN_ROUTE");
+                delivery.setStatus("IN_TRANSIT");
                 delivery.setStartedAt(now);
 
-                orderDao.updateStatus(order.getOrderId(), "EN_ROUTE");
+                orderDao.updateStatus(order.getOrderId(), "IN_TRANSIT");
 
-                loggingService.logDeliveryEvent(delivery, "Delivery transitioned to EN_ROUTE");
-                System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to EN_ROUTE");
+                // Mark as just transitioned to prevent immediate DELIVERED transition
+                justTransitioned.add(delivery.getDeliveryId());
+
+                loggingService.logDeliveryEvent(delivery, "Delivery transitioned to IN_TRANSIT");
+                System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to IN_TRANSIT");
             }
         }
     }
 
-    private void processBlockedRecovery() {
+    private void processBlockedRecovery(Set<Integer> justTransitioned) {
         List<Delivery> blockedDeliveries = deliveryDao.getByStatus("BLOCKED");
         LocalDateTime now = LocalDateTime.now();
 
@@ -86,32 +94,40 @@ public class DeliverySchedulerService {
             long secondsBlocked = ChronoUnit.SECONDS.between(delivery.getBlockedAt(), now);
 
             if (secondsBlocked >= BLOCKED_AUTO_RECOVERY_SECONDS) {
-                deliveryDao.updateStatus(delivery.getDeliveryId(), "EN_ROUTE");
+                deliveryDao.updateStatus(delivery.getDeliveryId(), "IN_TRANSIT");
                 deliveryDao.updateBlockedAt(delivery.getDeliveryId(), null);
-                delivery.setStatus("EN_ROUTE");
+                delivery.setStatus("IN_TRANSIT");
                 delivery.setBlockedAt(null);
 
-                orderDao.updateStatus(delivery.getOrderId(), "EN_ROUTE");
+                orderDao.updateStatus(delivery.getOrderId(), "IN_TRANSIT");
+
+                // Mark as just transitioned
+                justTransitioned.add(delivery.getDeliveryId());
 
                 loggingService.logDeliveryEvent(delivery, "Obstacle auto-cleared after " + secondsBlocked + " seconds");
-                System.out.println("Delivery #" + delivery.getDeliveryId() + " auto-recovered from BLOCKED to EN_ROUTE");
+                System.out.println("Delivery #" + delivery.getDeliveryId() + " auto-recovered from BLOCKED to IN_TRANSIT");
             }
         }
     }
 
-    private void processDeliveredTransitions() {
-        List<Delivery> enRouteDeliveries = deliveryDao.getByStatus("EN_ROUTE");
+    private void processDeliveredTransitions(Set<Integer> justTransitioned) {
+        List<Delivery> inTransitDeliveries = deliveryDao.getByStatus("IN_TRANSIT");
         LocalDateTime now = LocalDateTime.now();
 
-        for (Delivery delivery : enRouteDeliveries) {
-            // Check how long the delivery has been EN_ROUTE (using started_at, not order.created_at)
+        for (Delivery delivery : inTransitDeliveries) {
+            // Skip if this delivery was just transitioned to IN_TRANSIT in this cycle
+            if (justTransitioned.contains(delivery.getDeliveryId())) {
+                continue;
+            }
+
+            // Check how long the delivery has been IN_TRANSIT (using started_at)
             if (delivery.getStartedAt() == null) {
                 continue;
             }
 
             long secondsInTransit = ChronoUnit.SECONDS.between(delivery.getStartedAt(), now);
 
-            // Only transition to DELIVERED after being EN_ROUTE for required time
+            // Only transition to DELIVERED after being IN_TRANSIT for required time
             if (secondsInTransit >= DELIVERY_TIME_SECONDS) {
                 deliveryDao.updateStatus(delivery.getDeliveryId(), "DELIVERED");
                 deliveryDao.updateCompletedAt(delivery.getDeliveryId(), now);
@@ -121,7 +137,7 @@ public class DeliverySchedulerService {
                 orderDao.updateStatus(delivery.getOrderId(), "DELIVERED");
 
                 loggingService.logDeliveryEvent(delivery, "Delivery completed - DELIVERED after " + secondsInTransit + " seconds in transit");
-                System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to DELIVERED (was EN_ROUTE for " + secondsInTransit + " sec)");
+                System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to DELIVERED");
             }
         }
     }

@@ -46,9 +46,9 @@ public class DeliveryController {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery not found.");
         }
 
-        if (!"EN_ROUTE".equals(delivery.getStatus())) {
+        if (!"IN_TRANSIT".equals(delivery.getStatus())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                "Can only block deliveries that are EN_ROUTE. Current status: " + delivery.getStatus());
+                "Can only block deliveries that are IN_TRANSIT. Current status: " + delivery.getStatus());
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -80,16 +80,16 @@ public class DeliveryController {
                 "Delivery is not blocked. Current status: " + delivery.getStatus());
         }
 
-        deliveryDao.updateStatus(deliveryId, "EN_ROUTE");
+        deliveryDao.updateStatus(deliveryId, "IN_TRANSIT");
         deliveryDao.updateBlockedAt(deliveryId, null);
-        orderDao.updateStatus(delivery.getOrderId(), "EN_ROUTE");
+        orderDao.updateStatus(delivery.getOrderId(), "IN_TRANSIT");
 
-        loggingService.logDeliveryEvent(delivery, "Obstacle cleared - delivery resumed EN_ROUTE");
-        System.out.println("Delivery #" + deliveryId + " unblocked, resuming EN_ROUTE");
+        loggingService.logDeliveryEvent(delivery, "Obstacle cleared - delivery resumed IN_TRANSIT");
+        System.out.println("Delivery #" + deliveryId + " unblocked, resuming IN_TRANSIT");
 
         Map<String, Object> response = new HashMap<>();
         response.put("deliveryId", deliveryId);
-        response.put("status", "EN_ROUTE");
+        response.put("status", "IN_TRANSIT");
         response.put("message", "Obstacle cleared. Delivery resumed.");
         return response;
     }

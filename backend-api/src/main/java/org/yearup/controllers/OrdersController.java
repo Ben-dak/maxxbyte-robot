@@ -106,12 +106,13 @@ public class OrdersController {
             try {
                 Delivery delivery = new Delivery();
                 delivery.setOrderId(created.getOrderId());
-                delivery.setStatus("PENDING_ASSIGNMENT");
+                delivery.setStatus("PREPPING_ORDER");
                 delivery.setPickupLocation("Main Kitchen");
                 delivery.setDropoffLocation(created.getDeliveryAddress());
                 Delivery createdDelivery = deliveryDao.create(delivery);
                 if (createdDelivery != null) {
-                    loggingService.logDeliveryEvent(createdDelivery, "Delivery record created.");
+                    loggingService.logDeliveryEvent(createdDelivery, "Delivery transitioned to PREPPING_ORDER");
+                    System.out.println("Delivery #" + createdDelivery.getDeliveryId() + " transitioned to PREPPING_ORDER");
                 }
             } catch (Exception e) {
                 System.err.println("Warning: Delivery record creation failed for order " + created.getOrderId() + ": " + e.getMessage());
