@@ -91,6 +91,12 @@ public class MySqlDeliveryLocationDao extends MySqlDaoBase implements DeliveryLo
         location.setBillingZip(row.getString("billing_zip"));
         location.setBillingCountry(row.getString("billing_country"));
         location.setActive(row.getBoolean("is_active"));
+        try {
+            location.setMapYPercent(row.getBigDecimal("map_y_percent"));
+            location.setMapXPercent(row.getBigDecimal("map_x_percent"));
+        } catch (SQLException e) {
+            // Columns may not exist if migration not run yet
+        }
         return location;
     }
 }

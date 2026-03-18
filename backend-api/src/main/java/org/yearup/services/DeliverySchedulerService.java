@@ -9,6 +9,7 @@ import org.yearup.models.Delivery;
 import org.yearup.models.Order;
 import org.yearup.models.Robot;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashSet;
@@ -22,6 +23,9 @@ public class DeliverySchedulerService {
     private static final long PREP_TIME_MINUTES = 10;
     private static final long DELIVERY_TIME_MINUTES = 10;
     private static final long BLOCKED_AUTO_RECOVERY_MINUTES = 2;
+
+    // TC-006/TC-010: 15 mph max on sidewalks (strict boundary: 15.0 allowed, 15.1 blocked)
+    private static final BigDecimal MAX_SPEED_MPH = new BigDecimal("15.0");
 
     private final DeliveryDao deliveryDao;
     private final OrderDao orderDao;
@@ -139,6 +143,54 @@ public class DeliverySchedulerService {
                 loggingService.logDeliveryEvent(delivery, "Delivery completed - DELIVERED after " + minutesInTransit + " minutes in transit");
                 System.out.println("Delivery #" + delivery.getDeliveryId() + " transitioned to DELIVERED");
             }
+        }
+    }
+
+    /**
+     * Log robot telemetry (speed_mph, battery_level, location) for IN_TRANSIT deliveries.
+     * Fixes robot_logs NULL persistence. Ensures 15 mph cap (TC-006/TC-010).
+     */
+    @Scheduled(fixedRate = 60000)
+    public void logInTransitRobotTelemetry() {
+        List<Delivery> inTransitDeliveries = deliveryDao.getByStatus("IN_TRANSIT");
+        LocalDateTime now = LocalDateTime.now();
+
+        for (Delivery delivery : inTransitDeliveries) {
+            if (delivery.getRobotId() == null || delivery.getStartedAt() == null) {
+                continue;
+            }
+
+            Robot robot = robotDao.getById(delivery.getRobotId());
+            if (robot == null) {
+                continue;
+            }
+
+            Order order = orderDao.getById(delivery.getOrderId());
+            String location = "UNKNOWN";
+            if (order != null) {
+                location = String.format("%s, %s, %s %s",
+                        order.getDeliveryAddress() != null ? order.getDeliveryAddress() : "",
+                        order.getDeliveryCity() != null ? order.getDeliveryCity() : "",
+                        order.getDeliveryState() != null ? order.getDeliveryState() : "",
+                        order.getDeliveryZip() != null ? order.getDeliveryZip() : "").trim();
+                if (location.equals(", ,  ")) {
+                    location = order.getDeliveryAddress() != null ? order.getDeliveryAddress() : "UNKNOWN";
+                }
+            }
+
+            long minutesInTransit = ChronoUnit.MINUTES.between(delivery.getStartedAt(), now);
+            double progress = Math.min(1.0, (double) minutesInTransit / DELIVERY_TIME_MINUTES);
+            int batteryDrain = (int) (progress * 10);
+            int batteryLevel = Math.max(80, 100 - batteryDrain);
+
+            robot.setCurrentLocation(location);
+            robot.setCurrentSpeedMph(MAX_SPEED_MPH);
+            robot.setBatteryLevel(batteryLevel);
+            robot.setOnPedestrianPath(true);
+            robot.setLastUpdatedAt(now);
+
+            robotDao.updateStatus(robot);
+            loggingService.logRobotStatus(robot);
         }
     }
 

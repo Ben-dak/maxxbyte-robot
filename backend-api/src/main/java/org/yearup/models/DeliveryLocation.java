@@ -18,6 +18,8 @@ public class DeliveryLocation {
     private String billingZip;
     private String billingCountry;
     private boolean isActive;
+    private java.math.BigDecimal mapYPercent;
+    private java.math.BigDecimal mapXPercent;
 
     public DeliveryLocation() {
     }
@@ -169,5 +171,21 @@ public class DeliveryLocation {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public java.math.BigDecimal getMapYPercent() {
+        return mapYPercent;
+    }
+
+    public void setMapYPercent(java.math.BigDecimal mapYPercent) {
+        this.mapYPercent = mapYPercent;
+    }
+
+    public java.math.BigDecimal getMapXPercent() {
+        return mapXPercent;
+    }
+
+    public void setMapXPercent(java.math.BigDecimal mapXPercent) {
+        this.mapXPercent = mapXPercent;
     }
 }

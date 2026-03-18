@@ -1,10 +1,14 @@
 package org.yearup.models;
 
+import java.math.BigDecimal;
+
 public class Category
 {
     private int categoryId;
     private String name;
     private String description;
+    private BigDecimal mapYPercent;
+    private BigDecimal mapXPercent;
 
     public Category()
     {
@@ -45,5 +49,21 @@ public class Category
     public void setDescription(String description)
     {
         this.description = description;
+    }
+
+    public BigDecimal getMapYPercent() {
+        return mapYPercent;
+    }
+
+    public void setMapYPercent(BigDecimal mapYPercent) {
+        this.mapYPercent = mapYPercent;
+    }
+
+    public BigDecimal getMapXPercent() {
+        return mapXPercent;
+    }
+
+    public void setMapXPercent(BigDecimal mapXPercent) {
+        this.mapXPercent = mapXPercent;
     }
 }

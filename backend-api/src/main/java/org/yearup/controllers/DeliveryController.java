@@ -2,6 +2,7 @@ package org.yearup.controllers;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.yearup.data.DeliveryDao;
@@ -38,8 +39,10 @@ public class DeliveryController {
         return delivery;
     }
 
+    /** TC-007: Obstacle detection - block delivery. Exception handling ensures failures are reported cleanly. */
     @PostMapping("/{deliveryId}/block")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','ROBOT')")
+    @Transactional
     public Map<String, Object> simulateObstacle(@PathVariable int deliveryId) {
         Delivery delivery = deliveryDao.getById(deliveryId);
         if (delivery == null) {
@@ -47,16 +50,25 @@ public class DeliveryController {
         }
 
         if (!"IN_TRANSIT".equals(delivery.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Can only block deliveries that are IN_TRANSIT. Current status: " + delivery.getStatus());
         }
 
         LocalDateTime now = LocalDateTime.now();
-        deliveryDao.updateStatus(deliveryId, "BLOCKED");
-        deliveryDao.updateBlockedAt(deliveryId, now);
-        orderDao.updateStatus(delivery.getOrderId(), "BLOCKED");
+        try {
+            deliveryDao.updateStatus(deliveryId, "BLOCKED");
+            deliveryDao.updateBlockedAt(deliveryId, now);
+            orderDao.updateStatus(delivery.getOrderId(), "BLOCKED");
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Failed to block delivery: " + e.getMessage());
+        }
 
-        loggingService.logDeliveryEvent(delivery, "Obstacle detected - delivery BLOCKED");
+        try {
+            loggingService.logDeliveryEvent(delivery, "Obstacle detected - delivery BLOCKED");
+        } catch (Exception e) {
+            System.err.println("Logging failed for obstacle block: " + e.getMessage());
+        }
         System.out.println("Delivery #" + deliveryId + " BLOCKED due to obstacle at " + now);
 
         Map<String, Object> response = new HashMap<>();
@@ -67,8 +79,10 @@ public class DeliveryController {
         return response;
     }
 
+    /** TC-007: Obstacle cleared - unblock delivery. Exception handling ensures failures are reported cleanly. */
     @PostMapping("/{deliveryId}/unblock")
     @PreAuthorize("hasAnyRole('ADMIN','STAFF','ROBOT')")
+    @Transactional
     public Map<String, Object> resolveObstacle(@PathVariable int deliveryId) {
         Delivery delivery = deliveryDao.getById(deliveryId);
         if (delivery == null) {
@@ -76,15 +90,24 @@ public class DeliveryController {
         }
 
         if (!"BLOCKED".equals(delivery.getStatus())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                 "Delivery is not blocked. Current status: " + delivery.getStatus());
         }
 
-        deliveryDao.updateStatus(deliveryId, "IN_TRANSIT");
-        deliveryDao.updateBlockedAt(deliveryId, null);
-        orderDao.updateStatus(delivery.getOrderId(), "IN_TRANSIT");
+        try {
+            deliveryDao.updateStatus(deliveryId, "IN_TRANSIT");
+            deliveryDao.updateBlockedAt(deliveryId, null);
+            orderDao.updateStatus(delivery.getOrderId(), "IN_TRANSIT");
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                "Failed to unblock delivery: " + e.getMessage());
+        }
 
-        loggingService.logDeliveryEvent(delivery, "Obstacle cleared - delivery resumed IN_TRANSIT");
+        try {
+            loggingService.logDeliveryEvent(delivery, "Obstacle cleared - delivery resumed IN_TRANSIT");
+        } catch (Exception e) {
+            System.err.println("Logging failed for obstacle unblock: " + e.getMessage());
+        }
         System.out.println("Delivery #" + deliveryId + " unblocked, resuming IN_TRANSIT");
 
         Map<String, Object> response = new HashMap<>();

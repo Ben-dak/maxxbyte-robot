@@ -8,6 +8,7 @@ import org.yearup.models.DeliveryLog;
 import org.yearup.models.Robot;
 import org.yearup.models.RobotLog;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Service
@@ -27,10 +28,11 @@ public class LoggingService {
 
         RobotLog log = new RobotLog();
         log.setRobotId(robot.getRobotId());
-        log.setStatus(robot.getStatus());
+        log.setStatus(robot.getStatus() != null ? robot.getStatus() : "UNKNOWN");
         log.setBatteryLevel(robot.getBatteryLevel());
-        log.setLocation(robot.getCurrentLocation());
-        log.setSpeedMph(robot.getCurrentSpeedMph());
+        log.setLocation(robot.getCurrentLocation() != null && !robot.getCurrentLocation().isEmpty()
+                ? robot.getCurrentLocation() : "UNKNOWN");
+        log.setSpeedMph(robot.getCurrentSpeedMph() != null ? robot.getCurrentSpeedMph() : BigDecimal.ZERO);
         log.setOnPedestrianPath(robot.isOnPedestrianPath());
         log.setLoggedAt(LocalDateTime.now());
         robotLogDao.create(log);

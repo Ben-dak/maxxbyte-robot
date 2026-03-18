@@ -1,8 +1,7 @@
 /**
  * Campus map: route data and robot animation on the order tracker.
  * Routes are arrays of [percentY, percentX] over the map image (0–100).
- * Matches layout: Pizza Palace (Lake/Maple), Burger House, Sushi World (Maple Ave),
- * Saffron & Serrano (Oak St); deliveries: Campus North, Campus South, Downtown Hub, Tech Park.
+ * Fetches from GET /map/campus-data when available; falls back to hardcoded values.
  */
 const campusMap = (function () {
     // TEST_MODE: true = 10 sec each phase (testing); false = 10 min each (production). Change to false when ready.
@@ -10,49 +9,63 @@ const campusMap = (function () {
     const RESTAURANT_WAIT_MS = TEST_MODE ? 10 * 1000 : 10 * 60 * 1000;   // 10 sec or 10 min prep
     const ROUTE_DURATION_MS = TEST_MODE ? 10 * 1000 : 10 * 60 * 1000;   // 10 sec or 10 min transit
 
-    // Delivery endpoints [percentY, percentX] - positioned ON buildings, not on street
-    const DELIVERY_ENDPOINTS = {
-        'campus-north': [14, 52],   // 100 University Ave - on building (top center-right)
-        'campus-south': [58, 82],   // 200 College Blvd - right side
-        'downtown': [58, 38],       // 50 Main Street - Main St & Oak St
-        'tech-park': [75, 85]       // 300 Innovation Dr - bottom-right
+    // Fallback data when API is unavailable
+    const FALLBACK_DELIVERY_ENDPOINTS = {
+        'campus-north': [14, 52], 'campus-south': [58, 82], 'downtown': [62, 38], 'tech-park': [78, 88]
     };
-
-    // Restaurant start positions [percentY, percentX] - aligned with building locations
-    const RESTAURANT_STARTS = {
-        1: [15, 15],   // Pizza Palace - top-left near Lake/Maple Ave
-        2: [35, 15],   // Burger House - left side Maple Ave
-        3: [50, 15],   // Sushi World - left side Maple Ave, south of Burger
-        4: [86, 18]    // Saffron & Serrano - bottom-left Oak St/Maple intersection
+    const FALLBACK_RESTAURANT_STARTS = {
+        1: [12, 18], 2: [32, 18], 3: [48, 18], 4: [82, 22]
     };
-
-    // Routes: strict street/sidewalk paths only. NO grass. Maple Ave (X~17), University Ave (Y~16), Main St, Oak St, College Blvd, Innovation Dr.
-    const RESTAURANT_ROUTES = {
-        1: { // Pizza Palace - Maple Ave -> University Ave (N) or Main St (S) - no grass
-            'campus-north': [[15, 17], [15, 22], [15, 28], [15, 35], [15, 42], [15, 50], [14, 52]],
-            'campus-south': [[15, 17], [28, 17], [42, 17], [54, 18], [58, 28], [58, 48], [58, 65], [58, 82]],
-            'downtown': [[15, 17], [28, 17], [42, 18], [50, 26], [55, 32], [58, 38]],
-            'tech-park': [[15, 17], [30, 17], [48, 17], [58, 22], [62, 35], [68, 52], [72, 70], [75, 82], [75, 85]]
+    const FALLBACK_RESTAURANT_ROUTES = {
+        1: { // Pizza Palace - south on Maple to intersection, east on University Ave, north into Campus North
+            'campus-north': [[12, 18], [14, 18], [16, 18], [18, 18], [18, 25], [18, 35], [18, 45], [18, 52], [16, 52], [14, 52]],
+            'campus-south': [[12, 18], [22, 18], [35, 18], [48, 18], [54, 25], [56, 45], [58, 65], [58, 82]],
+            'downtown': [[12, 18], [25, 18], [42, 18], [52, 22], [58, 32], [62, 38]],
+            'tech-park': [[12, 18], [25, 18], [42, 18], [55, 25], [65, 45], [72, 68], [78, 82], [78, 88]]
         },
-        2: { // Burger House - north on Maple Ave -> University Ave (N) or south to Main St
-            'campus-north': [[35, 17], [28, 17], [22, 17], [16, 17], [16, 25], [16, 35], [16, 45], [14, 52]],
-            'campus-south': [[35, 17], [45, 17], [52, 18], [56, 25], [58, 45], [58, 65], [58, 82]],
-            'downtown': [[35, 17], [42, 17], [50, 24], [54, 32], [58, 38]],
-            'tech-park': [[35, 17], [48, 17], [55, 25], [62, 48], [70, 70], [75, 85]]
+        2: { // Burger House - north on Maple (N); south on Maple to intersection for S/D/T
+            'campus-north': [[32, 18], [26, 18], [20, 18], [16, 18], [16, 28], [16, 40], [14, 52]],
+            'campus-south': [[32, 18], [42, 18], [52, 18], [56, 28], [58, 50], [58, 72], [58, 82]],
+            'downtown': [[32, 18], [42, 18], [52, 18], [58, 28], [62, 36], [62, 38]],
+            'tech-park': [[32, 18], [42, 18], [52, 18], [58, 30], [65, 50], [72, 72], [78, 85], [78, 88]]
         },
-        3: { // Sushi World - north on Maple Ave -> University Ave (N) or cross to Main St
-            'campus-north': [[50, 17], [42, 17], [35, 17], [25, 17], [16, 17], [16, 28], [16, 40], [14, 52]],
-            'campus-south': [[50, 17], [52, 25], [54, 42], [56, 58], [58, 72], [58, 82]],
-            'downtown': [[50, 17], [52, 24], [54, 30], [56, 35], [58, 38]],
-            'tech-park': [[50, 17], [52, 32], [58, 52], [68, 70], [74, 80], [75, 85]]
+        3: { // Sushi World - north on Maple (N); south on Maple, College Blvd (S/T) or Oak->Main (D)
+            'campus-north': [[48, 18], [40, 18], [30, 18], [20, 18], [16, 18], [16, 30], [16, 42], [14, 52]],
+            'campus-south': [[48, 18], [52, 22], [54, 35], [56, 52], [58, 70], [58, 82]],
+            'downtown': [[48, 18], [54, 18], [60, 20], [64, 28], [62, 36], [62, 38]],
+            'tech-park': [[48, 18], [52, 22], [54, 38], [58, 55], [68, 72], [76, 84], [78, 88]]
         },
-        4: { // Saffron & Serrano - Oak St/Main St (no grass). N on Oak/Maple, E on University for Campus North.
-            'campus-north': [[86, 18], [82, 18], [75, 18], [65, 18], [55, 18], [45, 18], [35, 18], [25, 18], [16, 18], [16, 28], [16, 40], [16, 50], [14, 52]],
-            'campus-south': [[86, 18], [84, 22], [80, 30], [75, 40], [70, 52], [65, 65], [62, 75], [58, 82]],
-            'downtown': [[86, 18], [84, 22], [80, 26], [75, 30], [70, 33], [65, 35], [62, 36], [58, 38]],
-            'tech-park': [[86, 18], [84, 25], [82, 40], [80, 55], [78, 68], [76, 78], [75, 85]]
+        4: { // Saffron & Serrano - Oak St east to Maple, north on Maple; Main St east for S/D/T
+            'campus-north': [[82, 22], [78, 20], [70, 18], [58, 18], [45, 18], [30, 18], [18, 18], [16, 28], [16, 42], [14, 52]],
+            'campus-south': [[82, 22], [78, 20], [72, 22], [68, 30], [65, 48], [62, 68], [58, 82]],
+            'downtown': [[82, 22], [78, 20], [72, 22], [68, 28], [65, 34], [62, 38]],
+            'tech-park': [[82, 22], [78, 20], [72, 24], [68, 38], [70, 55], [74, 72], [78, 85], [78, 88]]
         }
     };
+
+    // Live data from API; overwritten when /map/campus-data succeeds
+    let deliveryEndpoints = Object.assign({}, FALLBACK_DELIVERY_ENDPOINTS);
+    let restaurantStarts = Object.assign({}, FALLBACK_RESTAURANT_STARTS);
+    let restaurantRoutes = JSON.parse(JSON.stringify(FALLBACK_RESTAURANT_ROUTES));
+
+    function loadCampusData() {
+        const base = (typeof window !== 'undefined' && window.location && window.location.origin) ? window.location.origin : '';
+        fetch(base + '/map/campus-data')
+            .then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status))
+            .then(data => {
+                if (data.deliveryEndpoints && Object.keys(data.deliveryEndpoints).length > 0) {
+                    deliveryEndpoints = data.deliveryEndpoints;
+                }
+                if (data.restaurantStarts && Object.keys(data.restaurantStarts).length > 0) {
+                    restaurantStarts = data.restaurantStarts;
+                }
+                if (data.routes && Object.keys(data.routes).length > 0) {
+                    restaurantRoutes = data.routes;
+                }
+            })
+            .catch(() => { /* keep fallbacks */ });
+    }
+    loadCampusData();
 
     function getDeliveryKeyFromOrder() {
         let addr = '';
@@ -62,14 +75,14 @@ const campusMap = (function () {
         }
         if (typeof getLocationKeyFromAddress === 'function') {
             const key = getLocationKeyFromAddress(addr);
-            if (key && DELIVERY_ENDPOINTS[key]) return key;
+            if (key && deliveryEndpoints[key]) return key;
         }
         return 'campus-north';
     }
 
     function getRouteForOrder(restaurantId, deliveryKey) {
         const delivery = deliveryKey || getDeliveryKeyFromOrder();
-        const rest = RESTAURANT_ROUTES[restaurantId];
+        const rest = restaurantRoutes[restaurantId] || restaurantRoutes[String(restaurantId)];
         if (!rest) return null;
         return rest[delivery] || rest['campus-north'];
     }

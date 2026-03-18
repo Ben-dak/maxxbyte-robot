@@ -26,40 +26,40 @@ const config = {
         campusMap: 'images/logo/campus-map.png',
         
         // Restaurant list cards
-        restaurantCardPizzaPalace: 'images/photos/Restaurants/pizza-palace.jpg',
-        restaurantCardBurgerHouse: 'images/photos/Restaurants/burger-house.jpg',
-        restaurantCardSushiWorld: 'images/photos/Restaurants/sushi-world.jpg',
-        restaurantCardSaffronSerrano: 'images/photos/Restaurants/saffron-serrano.jpg',
+        restaurantCardPizzaPalace: 'images/photos/Restaurants/Pizza-Palace.jpg',
+        restaurantCardBurgerHouse: 'images/photos/Restaurants/Burger-House.jpg',
+        restaurantCardSushiWorld: 'images/photos/Restaurants/Sushi.jpg',
+        restaurantCardSaffronSerrano: 'images/photos/Restaurants/saffron-and-serrano.png',
         
         // Pizza Palace menu images
-        pepperoniImage: 'images/products/pepperoni.jpg',
-        margheritaImage: 'images/products/margherita.jpg',
-        bbqChickenPizzaImage: 'images/products/bbq-chicken-pizza.jpg',
-        garlicBreadImage: 'images/products/garlic-bread.jpg',
-        caesarSaladImage: 'images/products/caesar-salad.jpg',
+        pepperoniImage: 'images/logo/Pepperoni-Pizza.jpg',
+        margheritaImage: 'images/logo/Pizza-Margherita.jpg',
+        bbqChickenPizzaImage: 'images/logo/BBQ-Chicken Pizza.jpg',
+        garlicBreadImage: 'images/logo/Garlic-Bread.jpg',
+        caesarSaladImage: 'images/logo/Caesar Salad.jpg',
         
         // Burger House menu images
-        cheeseburgerImage: 'images/products/cheeseburger.jpg',
-        bbqBurgerImage: 'images/products/bbq-burger.jpg',
-        mushroomBurgerImage: 'images/products/mushroom-burger.jpg',
-        friesImage: 'images/products/fries.jpg',
-        onionRingsImage: 'images/products/onion-rings.jpg',
-        milkshakeImage: 'images/products/milkshake.jpg',
+        cheeseburgerImage: 'images/logo/Burger.jpg',
+        bbqBurgerImage: 'images/logo/BBQ-Cheeseburger.jpg',
+        mushroomBurgerImage: 'images/logo/mushroom-burger.jpg',
+        friesImage: 'images/logo/French-Fry.jpg',
+        onionRingsImage: 'images/logo/onion-rings.jpg',
+        milkshakeImage: 'images/logo/Chocolate-Milkshake.jpg',
         
         // Sushi World menu images
-        californiaRollImage: 'images/products/california-roll.jpg',
-        salmonSashimiImage: 'images/products/salmon-sashimi.jpg',
-        dragonRollImage: 'images/products/dragon-roll.jpg',
-        spicyTunaImage: 'images/products/spicy-tuna.jpg',
-        misoSoupImage: 'images/products/miso-soup.jpg',
-        edamameImage: 'images/products/edamame.jpg',
+        californiaRollImage: 'images/logo/california-roll.jpg',
+        salmonSashimiImage: 'images/logo/Salmon-Sashimi.jpg',
+        dragonRollImage: 'images/logo/Dragon-Roll.jpg',
+        spicyTunaImage: 'images/logo/Spicy-Tuna-Rolls.jpg',
+        misoSoupImage: 'images/logo/Miso-Soup.jpg',
+        edamameImage: 'images/logo/Spicy-Edamame.jpg',
         
         // Saffron & Serrano menu images
         tacoImage: 'images/logo/Tacos Photo.jpg',
         butterChickenImage: 'images/logo/Butter Chicken.jpg',
-        tikkaMasalaImage: 'images/products/tikka-masala.jpg',
-        nachosImage: 'images/products/nachos.jpg',
-        mangoLassiImage: 'images/products/mango-lassi.jpg',
-        churrosImage: 'images/products/churros.jpg'
+        tikkaMasalaImage: 'images/logo/Tikka-Masala.jpg',
+        nachosImage: 'images/logo/Paneer-Tikka-Masala Nachos.jpg',
+        mangoLassiImage: 'images/logo/Mango-Lassi.jpg',
+        churrosImage: 'images/logo/Churros.jpg'
     }
 }

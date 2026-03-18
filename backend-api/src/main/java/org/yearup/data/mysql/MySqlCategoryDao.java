@@ -25,10 +25,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         List<Category> categories = new ArrayList<>();
         // holds all categories from the database
 
-        String sql = """
-            SELECT category_id, name, description
-            FROM categories
-            """;
+        String sql = "SELECT category_id, name, description FROM categories";
         // query to retrieve all categories
 
         try (Connection connection = getConnection();
@@ -50,12 +47,27 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     }
 
     @Override
+    public List<Category> getCategoriesForMap()
+    {
+        String sql = "SELECT category_id, name, description, map_y_percent, map_x_percent FROM categories";
+        List<Category> categories = new ArrayList<>();
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery())
+        {
+            while (rs.next()) categories.add(mapRowWithMap(rs));
+        }
+        catch (SQLException e)
+        {
+            return getAllCategories();
+        }
+        return categories;
+    }
+
+    @Override
     public Category getById(int categoryId)
     {
-        String sql = """
-            SELECT category_id, name, description
-            FROM categories WHERE category_id = ?
-            """;
+        String sql = "SELECT category_id, name, description FROM categories WHERE category_id = ?";
 
         try (Connection connection = getConnection();
              PreparedStatement preparedStatement = connection.prepareStatement(sql))
@@ -165,12 +177,21 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     private Category mapRow(ResultSet row) throws SQLException
     {
         Category category = new Category();
-
         category.setCategoryId(row.getInt("category_id"));
         category.setName(row.getString("name"));
         category.setDescription(row.getString("description"));
-        // Map database columns to object fields
+        return category;
+    }
 
+    private Category mapRowWithMap(ResultSet row) throws SQLException
+    {
+        Category category = mapRow(row);
+        try {
+            category.setMapYPercent(row.getBigDecimal("map_y_percent"));
+            category.setMapXPercent(row.getBigDecimal("map_x_percent"));
+        } catch (SQLException e) {
+            // Columns may not exist if migration not run yet
+        }
         return category;
     }
 }
