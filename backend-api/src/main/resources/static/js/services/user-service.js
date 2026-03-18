@@ -22,12 +22,14 @@ class UserService {
 
     saveUser(user)
     {
+        const u = user?.user || user;
+        const role = (u?.authorities && u.authorities[0]) ? u.authorities[0].name : (u?.authorities?.[0]?.name) || 'ROLE_CUSTOMER';
         this.currentUser = {
-            token: user.token,
-            userId: user.user.id,
-            username: user.user.username,
-            role: user.user.authorities[0].name
-        }
+            token: user?.token || user?.jwt,
+            userId: u?.id ?? u?.userId,
+            username: u?.username ?? '',
+            role: role
+        };
         localStorage.setItem('user', JSON.stringify(this.currentUser));
     }
 

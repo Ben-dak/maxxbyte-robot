@@ -147,6 +147,40 @@ public class MySqlUserDao extends MySqlDaoBase implements UserDao
         return user != null;
     }
 
+    @Override
+    public void updatePassword(int userId, String hashedPassword)
+    {
+        String sql = "UPDATE users SET hashed_password = ? WHERE user_id = ?";
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql))
+        {
+            ps.setString(1, hashedPassword);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public void updateUsername(int userId, String username)
+    {
+        String sql = "UPDATE users SET username = ? WHERE user_id = ?";
+        try (Connection connection = getConnection();
+             PreparedStatement ps = connection.prepareStatement(sql))
+        {
+            ps.setString(1, username);
+            ps.setInt(2, userId);
+            ps.executeUpdate();
+        }
+        catch (SQLException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
     private User mapRow(ResultSet row) throws SQLException
     {
         int userId = row.getInt("user_id");

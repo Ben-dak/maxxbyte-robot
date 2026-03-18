@@ -60,8 +60,13 @@ public class AuthenticationController {
             httpHeaders.add(JWTFilter.AUTHORIZATION_HEADER, "Bearer " + jwt);
             return new ResponseEntity<>(new LoginResponseDto(jwt, user), httpHeaders, HttpStatus.OK);
         }
+        catch(ResponseStatusException ex)
+        {
+            throw ex;
+        }
         catch(Exception ex)
         {
+            ex.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
     }
@@ -81,15 +86,28 @@ public class AuthenticationController {
             // create user
             User user = userDao.create(new User(0, newUser.getUsername(), newUser.getPassword(), newUser.getRole()));
 
-            // create profile
+            // create profile (empty; frontend PUTs full data after login)
             Profile profile = new Profile();
             profile.setUserId(user.getId());
+            profile.setFirstName("");
+            profile.setLastName("");
+            profile.setPhone("");
+            profile.setEmail(newUser.getUsername());
+            profile.setAddress("");
+            profile.setCity("");
+            profile.setState("");
+            profile.setZip("");
             profileDao.create(profile);
 
             return new ResponseEntity<>(user, HttpStatus.CREATED);
         }
+        catch (ResponseStatusException e)
+        {
+            throw e;
+        }
         catch (Exception e)
         {
+            e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
     }

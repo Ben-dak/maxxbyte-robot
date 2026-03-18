@@ -269,20 +269,20 @@ function goToLoginScreen() {
     }, 'main');
 }
 
-async function goToRegisterScreen() {
+async function goToRegisterScreen(onComplete) {
     document.body.classList.add('on-login-page');
     document.body.classList.add('on-register-page');
     document.body.classList.remove('restaurant-view', 'on-menu-page');
     const username = (typeof userService !== 'undefined' && userService.getUserName()) ? userService.getUserName() : 'Guest';
-    
+
     // Fetch delivery locations from database
     const deliveryLocations = await fetchDeliveryLocations();
-    
+
     templateBuilder.build('create-account-screen', {
         logoUrl: config.assets.logo || '',
         username: username,
         deliveryLocations: deliveryLocations
-    }, 'main');
+    }, 'main', typeof onComplete === 'function' ? onComplete : undefined);
 }
 
 /** If already logged in, go to restaurants list; otherwise show login. Use for START YOUR ORDER and DELIVERY. */
@@ -417,15 +417,34 @@ function registerAndGoToRestaurant() {
     }
     if (errEl) errEl.textContent = '';
     
+    const city = document.getElementById('register-city')?.value || '';
+    const state = document.getElementById('register-state')?.value || '';
+    const zip = document.getElementById('register-zip')?.value || '';
+    const country = document.getElementById('register-country')?.value || '';
     const profileData = {
         firstName: firstName,
         lastName: lastName,
-        address: document.getElementById('register-city')?.value + ', ' + document.getElementById('register-state')?.value,
-        city: document.getElementById('register-city')?.value,
-        state: document.getElementById('register-state')?.value,
-        zip: document.getElementById('register-zip')?.value,
-        deliveryCountry: document.getElementById('register-country')?.value
+        email: username,
+        password: password,
+        confirmPassword: confirm,
+        address: (city && state) ? `${city}, ${state}` : '',
+        city: city,
+        state: state,
+        zip: zip,
+        deliveryCountry: country,
+        billingAddress: document.getElementById('register-billingAddress')?.value || '',
+        billingCity: document.getElementById('register-billingCity')?.value || city,
+        billingState: document.getElementById('register-billingState')?.value || state,
+        billingZip: document.getElementById('register-billingZip')?.value || zip,
+        billingCountry: document.getElementById('register-billingCountry')?.value || country,
+        cardNumberLast4: (document.getElementById('register-cardNumber')?.value || '').replace(/\D/g, '').slice(-4) || null
     };
+    const expStr = document.getElementById('register-exp')?.value || '';
+    if (expStr && expStr.includes('/')) {
+        const [mm, yy] = expStr.split('/');
+        profileData.expMonth = mm?.trim() || null;
+        profileData.expYear = (yy?.trim() && yy.length === 2) ? '20' + yy : (yy?.trim() || null);
+    }
     
     const url = `${config.baseUrl}/auth/register`;
     axios.post(url, {
@@ -646,14 +665,19 @@ function goToBitebotCheckoutScreen() {
             expYear: (p.expYear && p.expYear.length === 4) ? p.expYear.slice(-2) : (p.expYear || defaultPayment.expYear),
             billingZip: p.billingZip || p.zip || defaultPayment.billingZip
         } : defaultPayment;
-        const addr = p.address || p.billingAddress || '12345 SESAME ST';
-        const city = p.city || p.billingCity || 'LALA LAND';
-        const state = p.state || p.billingState || 'TX';
-        const zip = p.zip || p.billingZip || '90210';
+        const loc = deliveryLocationsCache[Object.keys(deliveryLocationsCache)[0]];
+        const fallbackAddr = loc ? loc.address : '';
+        const fallbackCity = loc ? loc.city : '';
+        const fallbackState = loc ? loc.state : '';
+        const fallbackZip = loc ? loc.zip : '';
+        const addr = p.address || p.billingAddress || fallbackAddr;
+        const city = p.city || p.billingCity || fallbackCity;
+        const state = p.state || p.billingState || fallbackState;
+        const zip = p.zip || p.billingZip || fallbackZip;
         bitebotOrder.deliveryAddress = { address: addr, city, state, zip };
         const locKey = getLocationKeyFromAddress(addr);
-        const loc = deliveryLocationsCache[locKey] || {};
-        const deliveryLocationName = loc.locationName ? loc.locationName.split(' - ')[0] : (locKey ? 'Delivery' : '');
+        const selectedLoc = deliveryLocationsCache[locKey] || {};
+        const deliveryLocationName = selectedLoc.locationName ? selectedLoc.locationName.split(' - ')[0] : (locKey ? 'Delivery' : '');
         const deliveryLocationsForCheckout = Object.keys(deliveryLocationsCache).length > 0
             ? Object.keys(deliveryLocationsCache).map(key => ({
                 locationKey: key,
@@ -1408,8 +1432,9 @@ window.cancelDelivery = function() {
         .then(confirmed => {
             if (!confirmed) return;
             
-            const url = `${config.baseUrl}/deliveries/order/${bitebotOrder.orderId}/abort`;
-            axios.post(url, {}, { headers: userService.getHeaders() })
+            const url = `${config.baseUrl}/orders/${bitebotOrder.orderId}/cancel`;
+            const headers = (typeof userService !== 'undefined') ? userService.getHeaders() : {};
+            axios.post(url, {}, { headers })
                 .then(response => {
                     console.log('Order cancelled:', response.data);
                     bitebotOrder.status = 'CANCELLED';
@@ -1446,10 +1471,9 @@ async function goToProfileScreen() {
 
     // Fetch profile from backend
     if (typeof profileService !== 'undefined') {
-        profileService.loadProfile()
+        profileService.loadProfileForFlow()
             .then(() => {
-                const profile = profileService.profile || {};
-                renderProfileScreen(profile);
+                renderProfileScreen(profileService.lastProfile || {});
             })
             .catch(() => {
                 renderProfileScreen({});
@@ -1460,7 +1484,7 @@ async function goToProfileScreen() {
 }
 
 function renderProfileScreen(profile) {
-    const locationKey = getLocationKeyFromAddress(profile.address || '');
+    const locationKey = getLocationKeyFromProfile(profile);
     const deliveryLocations = Object.keys(deliveryLocationsCache).map(key => {
         const loc = deliveryLocationsCache[key];
         return {
@@ -1473,13 +1497,13 @@ function renderProfileScreen(profile) {
         logoUrl: config.assets.logo || '',
         firstName: profile.firstName || '',
         lastName: profile.lastName || '',
-        email: userService.getUserName() || '',
+        email: profile.email || userService.getUserName() || '',
         city: profile.city || '',
         zip: profile.zip || '',
         state: profile.state || '',
-        country: profile.country || '',
+        country: profile.deliveryCountry || profile.country || '',
         cardNumber: profile.cardNumberLast4 ? '**** **** **** ' + profile.cardNumberLast4 : '',
-        exp: '',
+        exp: (profile.expMonth && profile.expYear) ? (profile.expMonth + '/' + profile.expYear) : '',
         cvv: '***',
         billingAddress: profile.billingAddress || profile.address || '',
         billingCity: profile.billingCity || profile.city || '',
@@ -1498,6 +1522,17 @@ function getLocationKeyFromAddress(address) {
     if (address.includes('college')) return 'campus-south';
     if (address.includes('main')) return 'downtown';
     if (address.includes('innovation')) return 'tech-park';
+    return '';
+}
+
+function getLocationKeyFromProfile(profile) {
+    const key = getLocationKeyFromAddress(profile.address || '');
+    if (key) return key;
+    const zip = profile.zip || '';
+    if (zip === '95112') return 'campus-north';
+    if (zip === '95113') return 'campus-south';
+    if (zip === '95110') return 'downtown';
+    if (zip === '95134') return 'tech-park';
     return '';
 }
 
@@ -1525,40 +1560,68 @@ window.fillProfileAddressFromSelection = function() {
 window.updateProfile = function() {
     const firstName = document.getElementById('profile-firstName')?.value?.trim();
     const lastName = document.getElementById('profile-lastName')?.value?.trim();
+    const email = document.getElementById('profile-email')?.value?.trim();
+    const password = document.getElementById('profile-password')?.value;
+    const confirm = document.getElementById('profile-confirm')?.value;
     const msgEl = document.getElementById('profile-message');
     
     if (!firstName || !lastName) {
-        if (msgEl) {
-            msgEl.textContent = 'First name and last name are required.';
-            msgEl.style.color = '#dc3545';
-        }
+        if (msgEl) { msgEl.textContent = 'First name and last name are required.'; msgEl.style.color = '#dc3545'; }
         return;
     }
-    
     const locationKey = document.getElementById('profile-deliveryAddress')?.value;
+    if (!locationKey) {
+        if (msgEl) { msgEl.textContent = 'Please select a delivery location.'; msgEl.style.color = '#dc3545'; }
+        return;
+    }
+    if (!email) {
+        if (msgEl) { msgEl.textContent = 'Email address is required.'; msgEl.style.color = '#dc3545'; }
+        return;
+    }
+    if (!password || !confirm) {
+        if (msgEl) { msgEl.textContent = 'Password and confirm password are required.'; msgEl.style.color = '#dc3545'; }
+        return;
+    }
+    if (password !== confirm) {
+        if (msgEl) { msgEl.textContent = 'Password and confirmation do not match.'; msgEl.style.color = '#dc3545'; }
+        return;
+    }
+    if (msgEl) msgEl.textContent = '';
+    
     const location = deliveryLocationsCache[locationKey] || {};
     
     const profileData = {
         firstName: firstName,
         lastName: lastName,
+        email: email,
+        password: password,
+        confirmPassword: confirm,
         address: location.address || '',
         city: location.city || '',
         state: location.state || '',
         zip: location.zip || '',
-        country: location.country || ''
+        deliveryCountry: location.country || '',
+        billingAddress: location.billingAddress || '',
+        billingCity: location.billingCity || '',
+        billingState: location.billingState || '',
+        billingZip: location.billingZip || '',
+        billingCountry: location.billingCountry || ''
     };
     
     axios.put(config.baseUrl + '/profile', profileData, { headers: userService.getHeaders() })
         .then(() => {
-            if (msgEl) {
-                msgEl.textContent = 'Profile updated successfully!';
-                msgEl.style.color = '#28a745';
+            if (typeof bitebotModal !== 'undefined' && bitebotModal.alert) {
+                bitebotModal.alert('Account Updated!').then(() => {
+                    if (typeof loadHome === 'function') loadHome();
+                });
+            } else {
+                if (msgEl) { msgEl.textContent = 'Profile updated successfully!'; msgEl.style.color = '#28a745'; }
             }
         })
         .catch(err => {
             console.error('Profile update failed:', err);
             if (msgEl) {
-                msgEl.textContent = 'Failed to update profile. Please try again.';
+                msgEl.textContent = err.response?.data?.message || 'Failed to update profile. Please try again.';
                 msgEl.style.color = '#dc3545';
             }
         });

@@ -1,5 +1,7 @@
 package org.yearup.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Profile
 {
     private int userId;
@@ -21,6 +23,10 @@ public class Profile
     private String billingZip;
     private String billingCountry;
     private String deliveryCountry;
+
+    /** Used only for profile update; not persisted. */
+    private transient String password;
+    private transient String confirmPassword;
 
     public Profile()
     {
@@ -149,4 +155,12 @@ public class Profile
     public void setBillingCountry(String billingCountry) { this.billingCountry = billingCountry; }
     public String getDeliveryCountry() { return deliveryCountry; }
     public void setDeliveryCountry(String deliveryCountry) { this.deliveryCountry = deliveryCountry; }
+
+    @JsonIgnore
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
+
+    @JsonIgnore
+    public String getConfirmPassword() { return confirmPassword; }
+    public void setConfirmPassword(String confirmPassword) { this.confirmPassword = confirmPassword; }
 }

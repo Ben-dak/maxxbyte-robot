@@ -17,4 +17,8 @@ public interface UserDao {
     User create(User user);
 
     boolean exists(String username);
+
+    void updatePassword(int userId, String hashedPassword);
+
+    void updateUsername(int userId, String username);
 }

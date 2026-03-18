@@ -25,17 +25,28 @@ function login()
         .then(response => {
             const data = response.data;
             if (data && typeof userService !== 'undefined') {
-                userService.saveUser(data);
-                userService.setHeaderLogin();
-                const token = data.token || data.jwt;
-                if (token) axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
-                if (typeof productService !== 'undefined' && productService.enableButtons) productService.enableButtons();
-                if (typeof cartService !== 'undefined' && cartService.loadCart) cartService.loadCart();
+                try {
+                    userService.saveUser(data);
+                    userService.setHeaderLogin();
+                    const token = data.token || data.jwt;
+                    if (token) axios.defaults.headers.common['Authorization'] = 'Bearer ' + token;
+                    if (typeof productService !== 'undefined' && productService.enableButtons) productService.enableButtons();
+                    if (typeof cartService !== 'undefined' && cartService.loadCart) cartService.loadCart();
+                } catch (e) {
+                    console.error('Login saveUser error:', e);
+                    if (errEl) errEl.textContent = 'Login succeeded but session setup failed. Please try again.';
+                    return;
+                }
             }
             hideModalForm();
         })
-        .catch(() => {
-            if (errEl) errEl.textContent = 'Login failed. Please check your email and password.';
+        .catch((err) => {
+            console.error('Login failed:', err?.response?.status, err?.response?.data);
+            if (errEl) {
+                const status = err?.response?.status;
+                const msg = err?.response?.data?.message || err?.response?.data?.error;
+                errEl.textContent = status === 401 ? 'Invalid email or password.' : (msg || 'Login failed. Please check your email and password.');
+            }
         });
 }
 

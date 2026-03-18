@@ -18,6 +18,7 @@ import org.yearup.services.LoggingService;
 import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/orders")
@@ -126,6 +127,37 @@ public class OrdersController {
             e.printStackTrace();
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Order creation failed: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/{orderId}/cancel")
+    @PreAuthorize("hasAnyRole('ADMIN','STAFF','USER','CUSTOMER')")
+    public Map<String, Object> cancelOrder(@PathVariable int orderId, Principal principal) {
+        Order order = orderDao.getById(orderId);
+        if (order == null) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Order not found.");
+        }
+        if (!isStaffOrAdmin()) {
+            User user = userDao.getByUserName(principal.getName());
+            if (user == null || order.getUserId() != user.getId()) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You can only cancel your own orders.");
+            }
+        }
+        String status = order.getStatus();
+        if ("DELIVERED".equals(status) || "CANCELLED".equals(status)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cannot cancel order. Current status: " + status);
+        }
+        orderDao.updateStatus(orderId, "CANCELLED");
+        Delivery delivery = deliveryDao.getByOrderId(orderId);
+        if (delivery != null) {
+            deliveryDao.updateStatus(delivery.getDeliveryId(), "CANCELLED");
+            deliveryDao.updateCompletedAt(delivery.getDeliveryId(), LocalDateTime.now());
+            loggingService.logDeliveryEvent(delivery, "Order cancelled by user");
+        }
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("orderId", orderId);
+        response.put("status", "CANCELLED");
+        response.put("message", "Order has been cancelled.");
+        return response;
     }
 
     @PutMapping("/{orderId}")

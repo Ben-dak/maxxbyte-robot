@@ -24,7 +24,8 @@ public class DeliveryLocationController {
         try {
             return deliveryLocationDao.getAllActive();
         } catch (Exception e) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error retrieving delivery locations");
+            System.err.println("DeliveryLocationController: delivery_locations table may not exist. Run create_delivery_locations.sql. " + e.getMessage());
+            return List.of();
         }
     }
 

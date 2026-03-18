@@ -40,7 +40,13 @@
                         <input type="text" id="profile-country" class="create-account-input" placeholder="Country" value="{{country}}" readonly>
                     </div>
                     <div class="create-account-field">
-                        <input type="text" id="profile-email" class="create-account-input" placeholder="Email Address" value="{{email}}" readonly>
+                        <input type="text" id="profile-email" class="create-account-input" placeholder="Email Address" value="{{email}}" autocomplete="username" required>
+                    </div>
+                    <div class="create-account-field">
+                        <input type="password" id="profile-password" class="create-account-input" placeholder="Password" autocomplete="new-password" required>
+                    </div>
+                    <div class="create-account-field">
+                        <input type="password" id="profile-confirm" class="create-account-input" placeholder="Confirm Password" autocomplete="new-password" required>
                     </div>
                 </div>
             </div>
@@ -70,7 +76,7 @@
             </div>
         </div>
         <div class="create-account-actions">
-            <button type="button" class="btn create-account-submit-btn" onclick="updateProfile()">SAVE CHANGES</button>
+            <button type="button" class="btn create-account-submit-btn" onclick="updateProfile()">Update</button>
         </div>
         <div id="profile-message" class="create-account-error"></div>
     </div>
