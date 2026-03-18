@@ -63,6 +63,7 @@ let bitebotOrder = {
     orderId: null,
     status: 'PLACED',
     statusScreenEnteredAt: null,
+    orderCreatedAt: null,
     lastOrderSnapshot: null,
     restaurantId: null
 };
@@ -311,34 +312,48 @@ function handleOrderNow() {
 // Delivery locations fetched from database API
 let deliveryLocationsCache = {};
 
+const FALLBACK_DELIVERY_LOCATIONS = [
+    { locationKey: 'campus-north', locationName: 'Campus North - 100 University Ave', address: '100 University Ave', city: 'San Jose', state: 'CA', zip: '95112', country: 'USA', cardNumber: '4111 1111 1111 1111', cardExp: '12/28', cardCvv: '123', billingAddress: '100 University Ave', billingCity: 'San Jose', billingState: 'CA', billingZip: '95112', billingCountry: 'USA' },
+    { locationKey: 'campus-south', locationName: 'Campus South - 200 College Blvd', address: '200 College Blvd', city: 'San Jose', state: 'CA', zip: '95113', country: 'USA', cardNumber: '4222 2222 2222 2222', cardExp: '06/27', cardCvv: '456', billingAddress: '200 College Blvd', billingCity: 'San Jose', billingState: 'CA', billingZip: '95113', billingCountry: 'USA' },
+    { locationKey: 'downtown', locationName: 'Downtown Hub - 50 Main Street', address: '50 Main Street', city: 'San Jose', state: 'CA', zip: '95110', country: 'USA', cardNumber: '4333 3333 3333 3333', cardExp: '09/26', cardCvv: '789', billingAddress: '50 Main Street', billingCity: 'San Jose', billingState: 'CA', billingZip: '95110', billingCountry: 'USA' },
+    { locationKey: 'tech-park', locationName: 'Tech Park - 300 Innovation Dr', address: '300 Innovation Dr', city: 'San Jose', state: 'CA', zip: '95134', country: 'USA', cardNumber: '4444 4444 4444 4444', cardExp: '03/29', cardCvv: '321', billingAddress: '300 Innovation Dr', billingCity: 'San Jose', billingState: 'CA', billingZip: '95134', billingCountry: 'USA' }
+];
+
+function populateDeliveryLocationsCache(locations) {
+    deliveryLocationsCache = {};
+    (locations || []).forEach(loc => {
+        deliveryLocationsCache[loc.locationKey] = {
+            locationName: loc.locationName,
+            address: loc.address,
+            city: loc.city,
+            zip: loc.zip,
+            state: loc.state,
+            country: loc.country,
+            cardNumber: loc.cardNumber,
+            exp: loc.cardExp,
+            cvv: loc.cardCvv,
+            billingAddress: loc.billingAddress,
+            billingCity: loc.billingCity,
+            billingZip: loc.billingZip,
+            billingState: loc.billingState,
+            billingCountry: loc.billingCountry
+        };
+    });
+}
+
 async function fetchDeliveryLocations() {
     try {
         const response = await axios.get(config.baseUrl + '/delivery-locations');
         const locations = response.data;
-        // Convert array to object keyed by locationKey for easy lookup
-        deliveryLocationsCache = {};
-        locations.forEach(loc => {
-            deliveryLocationsCache[loc.locationKey] = {
-                address: loc.address,
-                city: loc.city,
-                zip: loc.zip,
-                state: loc.state,
-                country: loc.country,
-                cardNumber: loc.cardNumber,
-                exp: loc.cardExp,
-                cvv: loc.cardCvv,
-                billingAddress: loc.billingAddress,
-                billingCity: loc.billingCity,
-                billingZip: loc.billingZip,
-                billingState: loc.billingState,
-                billingCountry: loc.billingCountry
-            };
-        });
-        return locations;
+        if (locations && locations.length > 0) {
+            populateDeliveryLocationsCache(locations);
+            return locations;
+        }
     } catch (error) {
         console.error('Failed to fetch delivery locations:', error);
-        return [];
     }
+    populateDeliveryLocationsCache(FALLBACK_DELIVERY_LOCATIONS);
+    return FALLBACK_DELIVERY_LOCATIONS;
 }
 
 window.fillAddressFromSelection = function() {
@@ -636,6 +651,15 @@ function goToBitebotCheckoutScreen() {
         const state = p.state || p.billingState || 'TX';
         const zip = p.zip || p.billingZip || '90210';
         bitebotOrder.deliveryAddress = { address: addr, city, state, zip };
+        const locKey = getLocationKeyFromAddress(addr);
+        const loc = deliveryLocationsCache[locKey] || {};
+        const deliveryLocationName = loc.locationName ? loc.locationName.split(' - ')[0] : (locKey ? 'Delivery' : '');
+        const deliveryLocationsForCheckout = Object.keys(deliveryLocationsCache).length > 0
+            ? Object.keys(deliveryLocationsCache).map(key => ({
+                locationKey: key,
+                locationName: deliveryLocationsCache[key].locationName
+            }))
+            : FALLBACK_DELIVERY_LOCATIONS.map(l => ({ locationKey: l.locationKey, locationName: l.locationName }));
         const orderItems = bitebotOrder.items.map(i => ({
             name: i.name,
             quantity: i.quantity,
@@ -654,15 +678,21 @@ function goToBitebotCheckoutScreen() {
             subtotal: subtotal.toFixed(2),
             tax: tax.toFixed(2),
             total: total.toFixed(2),
+            deliveryLocationName: deliveryLocationName || 'Delivery',
+            deliveryAddress: addr,
             deliveryLine1: addr,
             deliveryLine2: city + ', ' + state + ' ' + zip,
             deliveryCity: city,
             deliveryState: state,
             deliveryZip: zip,
+            deliveryLocationsForCheckout,
             ...paymentData
         };
     };
-    const loadThenShow = () => {
+    const loadThenShow = async () => {
+        if (Object.keys(deliveryLocationsCache).length === 0) {
+            await fetchDeliveryLocations();
+        }
         const fromProfile = (typeof profileService !== 'undefined' && profileService.lastProfile) ? profileService.lastProfile : null;
         const fromSession = bitebotOrder.payment;
         const data = getCheckoutData(fromProfile || fromSession);
@@ -695,8 +725,32 @@ function returnToCartFromCheckout() {
 }
 
 function editDeliveryFromCheckout() {
-    returnToCartFromCheckout();
+    const picker = document.getElementById('checkout-delivery-picker');
+    if (picker) {
+        picker.classList.toggle('bitebot-checkout-delivery-picker--hidden');
+    }
 }
+
+window.selectCheckoutDeliveryLocation = function(locationKey) {
+    const loc = deliveryLocationsCache[locationKey];
+    if (!loc) return;
+    bitebotOrder.deliveryAddress = {
+        address: loc.address,
+        city: loc.city,
+        state: loc.state,
+        zip: loc.zip
+    };
+    const locationName = loc.locationName ? loc.locationName.split(' - ')[0] : 'Delivery';
+    const line2 = loc.city + ', ' + loc.state + ' ' + loc.zip;
+    const locEl = document.getElementById('checkout-delivery-location');
+    const addrEl = document.getElementById('checkout-delivery-address');
+    const line2El = document.getElementById('checkout-delivery-line2');
+    if (locEl) locEl.textContent = locationName;
+    if (addrEl) addrEl.textContent = loc.address;
+    if (line2El) line2El.textContent = line2;
+    const picker = document.getElementById('checkout-delivery-picker');
+    if (picker) picker.classList.add('bitebot-checkout-delivery-picker--hidden');
+};
 
 function placeOrderFromCheckoutScreen() {
     bitebotOrder.orderError = null;
@@ -948,9 +1002,10 @@ function placeOrderAndGoToStatus() {
             const data = response.data;
             bitebotOrder.orderId = (data && data.orderId != null) ? data.orderId : (data && data.id != null) ? data.id : null;
             bitebotOrder.status = 'PLACED';
+            bitebotOrder.orderCreatedAt = (data && data.createdAt) ? new Date(data.createdAt).getTime() : Date.now();
+            bitebotOrder.statusScreenEnteredAt = Date.now();
             saveOrderSnapshot();
             bitebotOrder.items = [];
-            bitebotOrder.statusScreenEnteredAt = Date.now();
             if (typeof campusMap !== 'undefined' && campusMap.resetDelivered) campusMap.resetDelivered();
             bitebotOrder.orderError = null;
             document.body.classList.add('has-active-order');
@@ -1113,6 +1168,7 @@ window.goToOrderDeliveredScreen = function() {
     bitebotOrder.items = [];
     bitebotOrder.orderId = null;
     bitebotOrder.statusScreenEnteredAt = null;
+    bitebotOrder.orderCreatedAt = null;
 
     // Update cart display to show 0
     if (typeof updateHeaderCartCount === 'function') {
@@ -1170,6 +1226,9 @@ function goToOrderStatusScreen() {
                 if (order && order.status) {
                     bitebotOrder.status = order.status;
                     console.log('Fetched latest order status:', order.status);
+                }
+                if (order && order.createdAt) {
+                    bitebotOrder.orderCreatedAt = new Date(order.createdAt).getTime();
                 }
                 const data = getOrderStatusTemplateData();
                 templateBuilder.build('order-status-screen', data, 'main', () => {

@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', () => {
         bitebotOrder.orderId = null;
         bitebotOrder.status = 'PLACED';
         bitebotOrder.statusScreenEnteredAt = null;
+        bitebotOrder.orderCreatedAt = null;
         bitebotOrder.items = [];
     }
     

@@ -47,9 +47,17 @@
                 </div>
 
                 <div class="bitebot-checkout-block bitebot-checkout-delivery-block">
-                    <h2 class="bitebot-checkout-block-title">DELIVER TO <button type="button" class="bitebot-checkout-edit-btn" onclick="editDeliveryFromCheckout(); return false;" title="Edit address"><i class="fa-solid fa-pen"></i></button></h2>
+                    <h2 class="bitebot-checkout-block-title">DELIVER TO <button type="button" class="bitebot-checkout-edit-btn" onclick="editDeliveryFromCheckout(); return false;" title="Change delivery location"><i class="fa-solid fa-pen"></i></button></h2>
                     <p class="bitebot-checkout-customer-name">{{customerFirstName}} {{customerLastName}}</p>
+                    <p class="bitebot-checkout-delivery-location" id="checkout-delivery-location">{{deliveryLocationName}}</p>
+                    <p class="bitebot-checkout-delivery-address" id="checkout-delivery-address">{{deliveryAddress}}</p>
                     <p class="bitebot-checkout-address-line2" id="checkout-delivery-line2">{{deliveryLine2}}</p>
+                    <div id="checkout-delivery-picker" class="bitebot-checkout-delivery-picker bitebot-checkout-delivery-picker--hidden">
+                        <p class="bitebot-checkout-delivery-picker-title">Select delivery location</p>
+                        {{#deliveryLocationsForCheckout}}
+                        <button type="button" class="bitebot-checkout-delivery-picker-opt" data-location-key="{{locationKey}}" onclick="selectCheckoutDeliveryLocation('{{locationKey}}')">{{locationName}}</button>
+                        {{/deliveryLocationsForCheckout}}
+                    </div>
                     <div class="bitebot-checkout-delivery-options">
                         <span class="bitebot-checkout-delivery-opt"><i class="fa-solid fa-hand-holding"></i> Hand it to me</span>
                         <span class="bitebot-checkout-delivery-opt"><i class="fa-regular fa-clock"></i> ASAP - 10-20 mins</span>

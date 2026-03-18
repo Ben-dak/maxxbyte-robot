@@ -2200,7 +2200,7 @@ body.restaurant-view {
     top: 55%;
     left: 50%;
     transform: translate(-50%, -50%);
-    font-size: 3rem;
+    font-size: 2.25rem;  /* 25% smaller than 3rem */
     filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.6));
     pointer-events: none;
     transition: filter 0.3s ease;
@@ -3036,11 +3036,68 @@ body:has(.bitebot-checkout-screen) {
     opacity: 0.9;
 }
 
+.bitebot-checkout-delivery-location {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.bitebot-checkout-delivery-address {
+    margin: 0 0 0.25rem 0;
+    font-size: 0.95rem;
+    color: #333;
+}
+
 .bitebot-checkout-address-line1,
 .bitebot-checkout-address-line2 {
     margin: 0 0 0.5rem 0;
     font-size: 0.95rem;
     color: #333;
+}
+
+.bitebot-checkout-delivery-picker {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #fff;
+    border: 2px solid var(--bitebot-red);
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.bitebot-checkout-delivery-picker--hidden {
+    display: none;
+}
+
+.bitebot-checkout-delivery-picker-title {
+    margin: 0 0 0.75rem 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--bitebot-red);
+    text-transform: uppercase;
+}
+
+.bitebot-checkout-delivery-picker-opt {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    text-align: left;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.bitebot-checkout-delivery-picker-opt:last-child {
+    margin-bottom: 0;
+}
+
+.bitebot-checkout-delivery-picker-opt:hover {
+    background: #f5f5f5;
+    border-color: var(--bitebot-red);
 }
 
 .bitebot-checkout-delivery-options {

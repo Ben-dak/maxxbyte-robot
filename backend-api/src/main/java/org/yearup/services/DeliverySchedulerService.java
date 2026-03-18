@@ -36,8 +36,8 @@ public class DeliverySchedulerService {
         this.loggingService = loggingService;
     }
 
-    // PRODUCTION: Run every 60 seconds
-    @Scheduled(fixedRate = 60000)
+    // Run every 10 seconds to sync with UI (max 10 sec delay vs 60 sec)
+    @Scheduled(fixedRate = 10000)
     public void processDeliveryStatusTransitions() {
         // Track deliveries transitioned in this cycle to prevent double-processing
         Set<Integer> justTransitioned = new HashSet<>();
